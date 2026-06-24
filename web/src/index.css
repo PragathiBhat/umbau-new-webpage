@@ -1,9 +1,10 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@300;400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@300;400;500&family=Orbitron:wght@700;800&display=swap');
 @import "tailwindcss";
 
 @theme {
   --font-sans: 'Inter', system-ui, sans-serif;
   --font-display: 'Poppins', sans-serif;
+  --font-orbitron: 'Orbitron', sans-serif;
 }
 
 @keyframes blink {
@@ -12,6 +13,24 @@
 }
 .animate-blink {
   animation: blink 1s step-end infinite;
+}
+
+@keyframes pulse-once {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.06); }
+  100% { transform: scale(1); }
+}
+.animate-pulse-once {
+  animation: pulse-once 0.6s ease-in-out;
+}
+
+@keyframes sphere-revolve {
+  0% { transform: rotateY(0deg); }
+  100% { transform: rotateY(360deg); }
+}
+.animate-sphere-revolve {
+  animation: sphere-revolve 7s linear infinite;
+  transform-style: preserve-3d;
 }
 
 body {
