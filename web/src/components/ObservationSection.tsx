@@ -31,6 +31,13 @@ export function ObservationSection() {
       <Reveal>
         <p className="font-mono text-xs tracking-[2px] text-neutral-400 uppercase mb-3">02 — Scanning the city</p>
       </Reveal>
+      <Reveal delay={0.05}>
+        <h3 className="text-white text-lg md:text-2xl font-medium mb-6">
+          The most productive city in Germany.
+          <br />
+          The emptiest plaza in Wolfsburg.
+        </h3>
+      </Reveal>
 
       <div
         ref={wrapRef}
@@ -38,8 +45,8 @@ export function ObservationSection() {
         onMouseLeave={() => setTag(null)}
         className="relative w-full aspect-video rounded-2xl overflow-hidden bg-[#0a0a0a] cursor-none"
       >
-        <video autoPlay muted loop playsInline preload="none" className="w-full h-full object-cover grayscale contrast-125 brightness-75">
-          <source src={`${import.meta.env.BASE_URL}assets/scanning-wolfsburg.mp4`} type="video/mp4" />
+        <video autoPlay muted loop playsInline preload="none" className="w-full h-full object-cover contrast-125 brightness-75">
+          <source src={`${import.meta.env.BASE_URL}assets/scanning-city.mp4`} type="video/mp4" />
         </video>
         <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-black/30" />
 
@@ -57,12 +64,6 @@ export function ObservationSection() {
             </div>
           </>
         )}
-
-        <p className="absolute bottom-6 left-6 right-6 text-white text-lg md:text-2xl font-medium">
-          The most productive city in Germany.
-          <br />
-          The emptiest plaza in Wolfsburg.
-        </p>
       </div>
     </section>
   );
