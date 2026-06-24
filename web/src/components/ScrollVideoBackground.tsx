@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 
-const VIDEO_URL = `${import.meta.env.BASE_URL}assets/scanning-wolfsburg.mp4`;
+const VIDEO_URL = `${import.meta.env.BASE_URL}assets/Scenario_2.mp4`;
 
 export function ScrollVideoBackground({ fadeZoneId }: { fadeZoneId: string }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -140,7 +140,7 @@ export function ScrollVideoBackground({ fadeZoneId }: { fadeZoneId: string }) {
 
   return (
     <div ref={containerRef} className="fixed inset-0 z-0 bg-[#0a0a0a]" style={{ opacity: 1 }}>
-      <canvas ref={canvasRef} className="absolute inset-0 w-full h-full object-cover grayscale contrast-125 brightness-[0.45]" />
+      <canvas ref={canvasRef} className="absolute inset-0 w-full h-full object-cover contrast-125 brightness-[0.45]" />
       <video ref={videoRef} muted playsInline preload="auto" className="hidden">
         <source src={VIDEO_URL} type="video/mp4" />
       </video>
