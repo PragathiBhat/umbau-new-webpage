@@ -53,7 +53,7 @@ export function FixedCardsSection() {
         ? `linear-gradient(to bottom, black ${revealPct}%, transparent ${revealPct + 20}%)`
         : `linear-gradient(to right, black ${revealPct}%, transparent ${revealPct + 15}%)`;
       grid.style.maskImage = mask;
-      grid.style.WebkitMaskImage = mask;
+      grid.style.webkitMaskImage = mask;
 
       raf = requestAnimationFrame(tick);
     }
