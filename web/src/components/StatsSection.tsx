@@ -16,8 +16,12 @@ const STATS = [
     value: '5,000',
     icon: (
       <>
-        <rect x="4" y="9" width="16" height="11" rx="1.5" />
-        <path d="M8 9V6a4 4 0 0 1 8 0v3" />
+        <rect x="7" y="8" width="10" height="9" rx="2" />
+        <circle cx="9.5" cy="12.5" r="0.8" fill="currentColor" stroke="none" />
+        <circle cx="14.5" cy="12.5" r="0.8" fill="currentColor" stroke="none" />
+        <path d="M12 8V5" />
+        <circle cx="12" cy="4" r="1" />
+        <path d="M4 13h3M17 13h3" />
       </>
     ),
   },
@@ -36,33 +40,12 @@ const STATS = [
       </>
     ),
   },
-  {
-    label: 'Public space robots',
-    value: '0',
-    icon: (
-      <>
-        <rect x="6" y="3" width="12" height="18" rx="2" />
-        <circle cx="12" cy="17" r="0.6" />
-      </>
-    ),
-  },
-  {
-    label: 'Efficiency rating',
-    value: '0%',
-    icon: (
-      <>
-        <path d="M3 12a9 9 0 1 1 9 9" />
-        <path d="M12 7v5l4 2" />
-      </>
-    ),
-  },
 ];
 
 export function StatsSection() {
   return (
     <section id="the-city" className="relative z-[2] w-full max-w-7xl mx-auto px-6 py-24">
       <Reveal>
-        <p className="font-mono text-xs tracking-[2px] text-neutral-400 uppercase mb-2">// Transmission incoming</p>
         <h3 className="text-2xl md:text-3xl font-semibold uppercase text-white tracking-tight mb-8">The observation</h3>
       </Reveal>
 
@@ -75,11 +58,11 @@ export function StatsSection() {
         </h2>
       </Reveal>
 
-      <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {STATS.map((s, i) => (
           <Reveal key={s.label} delay={i * 0.06}>
-            <div className="border border-white/10 rounded-2xl p-6 h-full bg-white/5 hover:border-[#4F8FC2]/40 transition-colors">
-              <svg viewBox="0 0 24 24" className="w-6 h-6 mb-4 stroke-[#4F8FC2] fill-none stroke-[1.6]">
+            <div className="border border-white/10 rounded-2xl p-6 h-full bg-white/5 hover:border-[#4F8FC2]/40 transition-colors text-center">
+              <svg viewBox="0 0 24 24" className="w-10 h-10 mb-4 mx-auto stroke-orange-500 text-orange-500 fill-none stroke-[1.4]">
                 {s.icon}
               </svg>
               <div className="text-2xl font-semibold text-white tracking-tight">{s.value}</div>

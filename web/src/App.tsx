@@ -4,8 +4,8 @@ import { ScrollVideoBackground } from './components/ScrollVideoBackground';
 import { TitleSection } from './components/TitleSection';
 import { FixedCardsSection } from './components/FixedCardsSection';
 import { StatsSection } from './components/StatsSection';
+import { VisionSection } from './components/VisionSection';
 import { ObservationSection } from './components/ObservationSection';
-import { QuestionSection } from './components/QuestionSection';
 import { SiteSection } from './components/SiteSection';
 import { RobotsSection } from './components/RobotsSection';
 import { ScenariosSection } from './components/ScenariosSection';
@@ -24,8 +24,8 @@ function App() {
       </div>
 
       <StatsSection />
+      <VisionSection />
       <ObservationSection />
-      <QuestionSection />
       <SiteSection />
       <RobotsSection />
       <ScenariosSection />
