@@ -1,24 +1,15 @@
 import { useEffect, useRef } from 'react';
 
 const CARDS = [
-  {
-    title: 'Scan the city',
-    body: 'AMRs read the plaza in real time — occupancy, footfall, the event schedule — and decide what the space needs next.',
-  },
-  {
-    title: 'Deploy the robots',
-    body: 'AMR, gantry and arm move as one system: delivering, spanning and assembling modules without a single human hand.',
-  },
-  {
-    title: 'Reshape the plaza',
-    body: 'The same bricks become a playground at nine, an arena at six, and a market at dawn — on demand, every day.',
-  },
+  { word: 'Responsive', subtitle: "Shaping space around people's needs." },
+  { word: 'Alive', subtitle: 'Constantly changing, never standing still.' },
+  { word: 'Playful', subtitle: 'Inviting curiosity, joy, and discovery.' },
 ];
 
 export function FixedCardsSection() {
   const triggerRef = useRef<HTMLDivElement>(null);
   const fixedRef = useRef<HTMLDivElement>(null);
-  const gridRef = useRef<HTMLDivElement>(null);
+  const wordRefs = useRef<(HTMLDivElement | null)[]>([]);
 
   useEffect(() => {
     let raf = 0;
@@ -26,7 +17,6 @@ export function FixedCardsSection() {
     function tick() {
       const trigger = triggerRef.current!;
       const fixed = fixedRef.current!;
-      const grid = gridRef.current!;
       const rect = trigger.getBoundingClientRect();
       const triggerTop = rect.top + window.scrollY;
       const triggerHeight = rect.height;
@@ -34,7 +24,7 @@ export function FixedCardsSection() {
       const vh = window.innerHeight;
 
       const start = triggerTop - vh * 0.5;
-      const end = triggerTop + triggerHeight - vh * 0.3;
+      const end = triggerTop + triggerHeight - vh * 1.6;
       const range = end - start;
       let progress = range > 0 ? (scrollY - start) / range : 0;
       progress = Math.max(0, Math.min(1, progress));
@@ -47,13 +37,15 @@ export function FixedCardsSection() {
       fixed.style.opacity = String(containerOpacity);
       fixed.style.pointerEvents = containerOpacity > 0.1 ? 'auto' : 'none';
 
-      const isMobile = window.innerWidth < 768;
-      const revealPct = progress * 130;
-      const mask = isMobile
-        ? `linear-gradient(to bottom, black ${revealPct}%, transparent ${revealPct + 20}%)`
-        : `linear-gradient(to right, black ${revealPct}%, transparent ${revealPct + 15}%)`;
-      grid.style.maskImage = mask;
-      grid.style.webkitMaskImage = mask;
+      const step = 1 / CARDS.length;
+      wordRefs.current.forEach((el, i) => {
+        if (!el) return;
+        const wordStart = i * step * 0.85;
+        const wordEnd = wordStart + step;
+        const wordProgress = Math.max(0, Math.min(1, (progress - wordStart) / (wordEnd - wordStart)));
+        el.style.opacity = String(wordProgress);
+        el.style.transform = `translateY(${(1 - wordProgress) * 24}px)`;
+      });
 
       raf = requestAnimationFrame(tick);
     }
@@ -64,12 +56,24 @@ export function FixedCardsSection() {
 
   return (
     <>
-      <div ref={fixedRef} className="fixed bottom-0 left-0 right-0 z-[4] px-6 sm:px-10 py-12 opacity-0">
-        <div ref={gridRef} className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8">
-          {CARDS.map((c) => (
-            <div key={c.title}>
-              <h3 className="text-2xl font-bold text-white mb-3">{c.title}</h3>
-              <p className="text-sm text-neutral-300 leading-relaxed">{c.body}</p>
+      <div ref={fixedRef} className="fixed inset-0 z-[4] px-6 flex items-center justify-center opacity-0">
+        <div className="flex flex-col items-center gap-8 sm:gap-10">
+          {CARDS.map((c, i) => (
+            <div key={c.word} className="contents">
+              <div
+                ref={(el) => {
+                  wordRefs.current[i] = el;
+                }}
+                className="w-[min(90vw,520px)] rounded-3xl bg-black/55 px-8 py-10 text-center"
+              >
+                <h3 className="font-display text-[clamp(2rem,9vw,4.5rem)] font-light uppercase text-white leading-none tracking-wide">
+                  {c.word}
+                </h3>
+                <p className="mt-4 text-base sm:text-lg text-neutral-300">{c.subtitle}</p>
+              </div>
+              {i < CARDS.length - 1 && (
+                <span className="w-2.5 h-2.5 rounded-full bg-white/70" aria-hidden="true" />
+              )}
             </div>
           ))}
         </div>
