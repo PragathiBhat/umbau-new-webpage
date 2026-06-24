@@ -27,12 +27,9 @@ export function Navbar() {
         ))}
       </nav>
 
-      <a
-        href="#ending"
-        className="hidden md:inline text-[15px] text-white underline underline-offset-2 hover:opacity-70 transition-opacity"
-      >
-        Begin transmission
-      </a>
+      <span className="hidden md:inline text-[15px] text-white select-none">
+        WOLFSBURG
+      </span>
 
       <button
         className="md:hidden flex flex-col gap-[5px] z-20"
@@ -66,9 +63,7 @@ export function Navbar() {
             {link}
           </a>
         ))}
-        <a href="#ending" onClick={() => setIsMobileMenuOpen(false)} className="underline underline-offset-2">
-          Begin transmission
-        </a>
+        <span>WOLFSBURG</span>
       </div>
     </header>
   );
