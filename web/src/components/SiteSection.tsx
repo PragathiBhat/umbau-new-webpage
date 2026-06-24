@@ -1,4 +1,7 @@
+import { useEffect, useRef } from 'react';
 import { Reveal } from './Reveal';
+
+const LOOP_FADE_SECONDS = 0.5;
 
 const REASONS = [
   {
@@ -24,6 +27,26 @@ const REASONS = [
 ];
 
 export function SiteSection() {
+  const videoRef = useRef<HTMLVideoElement>(null);
+
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+
+    function handleTimeUpdate(this: HTMLVideoElement) {
+      if (!this.duration || !isFinite(this.duration)) return;
+      const timeFromEnd = this.duration - this.currentTime;
+      const fade =
+        timeFromEnd < LOOP_FADE_SECONDS
+          ? timeFromEnd / LOOP_FADE_SECONDS
+          : Math.min(1, this.currentTime / LOOP_FADE_SECONDS);
+      this.style.opacity = String(Math.max(0, Math.min(1, fade)));
+    }
+
+    video.addEventListener('timeupdate', handleTimeUpdate);
+    return () => video.removeEventListener('timeupdate', handleTimeUpdate);
+  }, []);
+
   return (
     <section id="the-site" className="relative z-[2] w-full max-w-7xl mx-auto px-6 py-24">
       <Reveal>
@@ -37,12 +60,22 @@ export function SiteSection() {
 
       <div className="grid md:grid-cols-2 gap-10 items-start mb-16">
         <Reveal>
-          <div className="relative rounded-2xl overflow-hidden border border-white/10">
-            <img src={`${import.meta.env.BASE_URL}assets/target-location.jpg`} alt="Marktplatz Wolfsburg site plan" className="w-full block" />
+          <div className="relative rounded-2xl overflow-hidden border border-white/10 bg-[#0a0a0a] aspect-square">
+            <video
+              ref={videoRef}
+              autoPlay
+              muted
+              loop
+              playsInline
+              preload="auto"
+              className="absolute inset-0 w-full h-full object-cover"
+            >
+              <source src={`${import.meta.env.BASE_URL}assets/site-zoom.mp4`} type="video/mp4" />
+            </video>
           </div>
         </Reveal>
         <Reveal delay={0.1}>
-          <div className="font-mono text-sm text-neutral-400 leading-7 pt-2">
+          <div className="font-sans text-sm text-neutral-400 leading-7 pt-2">
             <p className="text-white font-medium mb-2">Marktplatz · Porschestrasse · Wolfsburg</p>
             <p>Lat: <span className="text-white">52.4227° N</span> / Lng: <span className="text-white">10.7865° E</span></p>
             <p>Footprint: <span className="text-white">80 × 25m</span> / Area: <span className="text-white">2,000m²</span></p>
