@@ -4,7 +4,7 @@ import { useTypewriter } from '../hooks/useTypewriter';
 type Stage = 'idle' | 'line1' | 'line2' | 'locked' | 'statement' | 'done';
 
 function TypedStatement({ onDone }: { onDone: () => void }) {
-  const { displayed, done } = useTypewriter('WHAT IF THE FACTORY CAME OUTSIDE?', 35, 0);
+  const { displayed, done } = useTypewriter('WHAT IF THE FACTORY CAME OUTSIDE?', 22, 0);
 
   useEffect(() => {
     if (done) onDone();
@@ -49,13 +49,13 @@ export function FactoryTransitionSection() {
     const timers: number[] = [];
 
     if (stage === 'line1') {
-      timers.push(window.setTimeout(() => setStage('line2'), 900));
+      timers.push(window.setTimeout(() => setStage('line2'), 600));
     }
     if (stage === 'line2') {
-      timers.push(window.setTimeout(() => setStage('locked'), 900));
+      timers.push(window.setTimeout(() => setStage('locked'), 600));
     }
     if (stage === 'locked') {
-      timers.push(window.setTimeout(() => setStage('statement'), 1000));
+      timers.push(window.setTimeout(() => setStage('statement'), 500));
     }
 
     return () => timers.forEach(clearTimeout);
