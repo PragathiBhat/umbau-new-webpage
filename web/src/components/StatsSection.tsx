@@ -62,10 +62,15 @@ export function StatsSection() {
   return (
     <section id="the-city" className="relative z-[2] w-full max-w-7xl mx-auto px-6 py-24">
       <Reveal>
+        <p className="font-mono text-xs tracking-[2px] text-neutral-400 uppercase mb-2">// Transmission incoming</p>
+        <h3 className="text-2xl md:text-3xl font-semibold uppercase text-white tracking-tight mb-8">The observation</h3>
+      </Reveal>
+
+      <Reveal delay={0.1}>
         <p className="font-mono text-xs tracking-[2px] text-neutral-400 uppercase mb-3">// The city</p>
       </Reveal>
-      <Reveal delay={0.05}>
-        <h2 className="text-3xl md:text-4xl font-semibold tracking-tight text-white mb-12 max-w-2xl">
+      <Reveal delay={0.15}>
+        <h2 className="text-xl md:text-2xl font-semibold tracking-tight text-white mb-12 max-w-2xl">
           A city built entirely around one factory.
         </h2>
       </Reveal>
@@ -83,13 +88,6 @@ export function StatsSection() {
           </Reveal>
         ))}
       </div>
-
-      <Reveal delay={0.3} className="mt-12">
-        <div className="border-t border-white/10 pt-8">
-          <p className="font-mono text-xs tracking-[2px] text-neutral-400 uppercase mb-2">// Transmission incoming</p>
-          <h3 className="text-2xl md:text-3xl font-semibold text-white tracking-tight">The observation</h3>
-        </div>
-      </Reveal>
     </section>
   );
 }
