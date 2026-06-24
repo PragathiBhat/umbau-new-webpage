@@ -66,6 +66,9 @@ export function ScrollVideoBackground({ fadeZoneId }: { fadeZoneId: string }) {
           videoSeeking = true;
           video.currentTime = target;
         }
+        if (video.videoWidth > 0) {
+          drawFrame(video, video.videoWidth, video.videoHeight);
+        }
       }
       raf = requestAnimationFrame(tick);
     }
@@ -87,7 +90,7 @@ export function ScrollVideoBackground({ fadeZoneId }: { fadeZoneId: string }) {
           setTimeout(() => reject(), 15000);
         });
 
-        const scale = Math.min(1, 960 / probe.videoWidth);
+        const scale = Math.min(1, 1920 / probe.videoWidth);
         const w = Math.round(probe.videoWidth * scale);
         const h = Math.round(probe.videoHeight * scale);
         const frameCount = Math.max(24, Math.min(80, Math.round(probe.duration * 12)));
@@ -140,7 +143,7 @@ export function ScrollVideoBackground({ fadeZoneId }: { fadeZoneId: string }) {
 
   return (
     <div ref={containerRef} className="fixed inset-0 z-0 bg-[#0a0a0a]" style={{ opacity: 1 }}>
-      <canvas ref={canvasRef} className="absolute inset-0 w-full h-full object-cover contrast-125 brightness-[0.45]" />
+      <canvas ref={canvasRef} className="absolute inset-0 w-full h-full object-cover contrast-110 brightness-[0.85]" />
       <video ref={videoRef} muted playsInline preload="auto" className="hidden">
         <source src={VIDEO_URL} type="video/mp4" />
       </video>
