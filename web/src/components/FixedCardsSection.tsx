@@ -78,6 +78,7 @@ export function FixedCardsSection() {
           ))}
         </div>
       </div>
+      <div className="h-[80vh]" />
       <div ref={triggerRef} className="h-[200vh]" />
     </>
   );
