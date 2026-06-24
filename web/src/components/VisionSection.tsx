@@ -9,7 +9,7 @@ export function VisionSection() {
   const { scrollYProgress } = useScroll({ target: sectionRef, offset: ['start end', 'center center'] });
 
   const scale = useTransform(scrollYProgress, [0, 1], [0.4, 1]);
-  const opacity = useTransform(scrollYProgress, [0, 1], [0.2, 1]);
+  const opacity = useTransform(scrollYProgress, [0, 0.4], [0.2, 1]);
 
   useEffect(() => {
     const video = videoRef.current;
@@ -53,13 +53,13 @@ export function VisionSection() {
 
       <motion.h3
         style={{ scale, opacity }}
-        className="text-4xl md:text-6xl font-semibold uppercase text-orange-500 tracking-tight mb-10"
+        className="text-4xl md:text-6xl font-bold uppercase text-orange-400 tracking-tight mb-10 drop-shadow-[0_2px_12px_rgba(0,0,0,0.6)]"
       >
         The vision
       </motion.h3>
       <motion.h2
         style={{ scale, opacity }}
-        className="text-2xl md:text-4xl font-semibold tracking-tight text-white max-w-3xl mx-auto"
+        className="text-2xl md:text-4xl font-bold tracking-tight text-white max-w-3xl mx-auto drop-shadow-[0_2px_12px_rgba(0,0,0,0.6)]"
       >
         Repurpose factory robots as urban creators.
       </motion.h2>

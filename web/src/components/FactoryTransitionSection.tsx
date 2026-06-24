@@ -79,7 +79,7 @@ export function FactoryTransitionSection() {
   return (
     <section
       ref={sectionRef}
-      className="relative z-[2] w-full min-h-screen flex flex-col items-center justify-center bg-[#0a0a0a] px-6 text-center"
+      className="relative z-[2] w-full min-h-screen flex flex-col items-center justify-center px-6 text-center"
     >
       <div className="space-y-3 mb-16">
         <p
