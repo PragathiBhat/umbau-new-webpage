@@ -11,6 +11,7 @@ import { InnovationContrastSection } from './components/InnovationContrastSectio
 import { SiteSection } from './components/SiteSection';
 import { ZoningSection } from './components/ZoningSection';
 import { RobotsSection } from './components/RobotsSection';
+import { ConstructionSimulationSection } from './components/ConstructionSimulationSection';
 import { ScenariosSection } from './components/ScenariosSection';
 import { EndingSection } from './components/EndingSection';
 
@@ -34,6 +35,7 @@ function App() {
       <SiteSection />
       <ZoningSection />
       <RobotsSection />
+      <ConstructionSimulationSection />
       <ScenariosSection />
       <EndingSection />
     </div>
