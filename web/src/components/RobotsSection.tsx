@@ -31,7 +31,7 @@ export function RobotsSection() {
   return (
     <section id="the-robots" className="relative z-[2] w-full max-w-7xl mx-auto px-6 py-24">
       <Reveal>
-        <p className="font-mono text-xs tracking-[2px] text-orange-500 uppercase mb-3 text-center">05 — The robots</p>
+        <p className="font-mono text-xs tracking-[2px] text-orange-500 uppercase mb-3 text-center">06 — The robots</p>
       </Reveal>
       <Reveal delay={0.05}>
         <h2 className="text-3xl md:text-5xl font-extrabold tracking-tight text-white mb-12 text-center">

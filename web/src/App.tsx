@@ -8,7 +8,9 @@ import { FactoryTransitionSection } from './components/FactoryTransitionSection'
 import { VisionSection } from './components/VisionSection';
 import { ObservationSection } from './components/ObservationSection';
 import { SiteSection } from './components/SiteSection';
+import { ZoningSection } from './components/ZoningSection';
 import { RobotsSection } from './components/RobotsSection';
+import { MovementLogicSection } from './components/MovementLogicSection';
 import { ScenariosSection } from './components/ScenariosSection';
 import { EndingSection } from './components/EndingSection';
 
@@ -29,7 +31,9 @@ function App() {
       <VisionSection />
       <ObservationSection />
       <SiteSection />
+      <ZoningSection />
       <RobotsSection />
+      <MovementLogicSection />
       <ScenariosSection />
       <EndingSection />
     </div>
