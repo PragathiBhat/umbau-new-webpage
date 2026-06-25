@@ -33,15 +33,17 @@ export function SiteSection() {
     const video = videoRef.current;
     if (!video) return;
 
-    function handleTimeUpdate(this: HTMLVideoElement) {
-      if (!this.duration || !isFinite(this.duration)) return;
-      const timeFromEnd = this.duration - this.currentTime;
+    video.playbackRate = 0.4;
+
+    const handleTimeUpdate = () => {
+      if (!video.duration || !isFinite(video.duration)) return;
+      const timeFromEnd = video.duration - video.currentTime;
       const fade =
         timeFromEnd < LOOP_FADE_SECONDS
           ? timeFromEnd / LOOP_FADE_SECONDS
-          : Math.min(1, this.currentTime / LOOP_FADE_SECONDS);
-      this.style.opacity = String(Math.max(0, Math.min(1, fade)));
-    }
+          : Math.min(1, video.currentTime / LOOP_FADE_SECONDS);
+      video.style.opacity = String(Math.max(0, Math.min(1, fade)));
+    };
 
     video.addEventListener('timeupdate', handleTimeUpdate);
     return () => video.removeEventListener('timeupdate', handleTimeUpdate);
@@ -58,9 +60,9 @@ export function SiteSection() {
         </h2>
       </Reveal>
 
-      <div className="grid md:grid-cols-2 gap-10 items-start mb-16">
-        <Reveal>
-          <div className="relative rounded-2xl overflow-hidden border border-white/10 bg-[#0a0a0a] aspect-square">
+      <div className="flex flex-col items-center mb-16">
+        <Reveal className="w-full max-w-4xl">
+          <div className="relative rounded-2xl overflow-hidden border border-white/10 bg-[#0a0a0a] aspect-video">
             <video
               ref={videoRef}
               autoPlay
@@ -74,11 +76,11 @@ export function SiteSection() {
             </video>
           </div>
         </Reveal>
-        <Reveal delay={0.1}>
-          <div className="font-sans text-sm text-neutral-400 leading-7 pt-2">
+        <Reveal delay={0.1} className="mt-8 text-center">
+          <div className="font-sans text-sm text-neutral-400 leading-7">
             <p className="text-white font-medium mb-2">Marktplatz · Porschestrasse · Wolfsburg</p>
             <p>Lat: <span className="text-white">52.4227° N</span> / Lng: <span className="text-white">10.7865° E</span></p>
-            <p>Footprint: <span className="text-white">80 × 25m</span> / Area: <span className="text-white">2,000m²</span></p>
+            <p>Footprint: <span className="text-white">84 × 28m</span> / Area: <span className="text-white">2,353m²</span></p>
           </div>
         </Reveal>
       </div>

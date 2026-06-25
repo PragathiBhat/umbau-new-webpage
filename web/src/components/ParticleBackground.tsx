@@ -25,9 +25,9 @@ export function ParticleBackground() {
         particles.push({
           x: Math.random() * canvas.width,
           y: Math.random() * canvas.height,
-          vx: (Math.random() - 0.5) * 0.25,
-          vy: (Math.random() - 0.5) * 0.25,
-          size: Math.random() * 1.4 + 0.4,
+          vx: (Math.random() - 0.5) * 0.7,
+          vy: (Math.random() - 0.5) * 0.7,
+          size: Math.random() * 2.2 + 0.8,
           opacity: Math.random() * 0.4 + 0.15,
         });
       }
@@ -50,7 +50,7 @@ export function ParticleBackground() {
         if (p.y > canvas.height) p.y = 0;
         ctx.beginPath();
         ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(255,255,255,${p.opacity})`;
+        ctx.fillStyle = `rgba(249,115,22,${p.opacity})`;
         ctx.fill();
       }
       raf = requestAnimationFrame(animate);

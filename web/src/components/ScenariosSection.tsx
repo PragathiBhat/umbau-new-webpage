@@ -107,11 +107,6 @@ export function ScenariosSection() {
           </div>
         </motion.div>
       </AnimatePresence>
-
-      <Reveal delay={0.2} className="text-center mt-16">
-        <p className="text-lg text-neutral-400">Same plaza. Same robots. Same bricks.</p>
-        <p className="text-3xl md:text-5xl font-semibold text-[#4F8FC2] mt-2">Infinite city.</p>
-      </Reveal>
     </section>
   );
 }

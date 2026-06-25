@@ -3,6 +3,27 @@ import { useTypewriter } from '../hooks/useTypewriter';
 
 type Stage = 'idle' | 'line1' | 'line2' | 'locked' | 'statement' | 'done';
 
+function WordReveal({ text, show }: { text: string; show: boolean }) {
+  const words = text.split(' ');
+  return (
+    <p className="text-xl sm:text-2xl md:text-3xl font-semibold tracking-tight text-white">
+      {words.map((word, i) => (
+        <span
+          key={i}
+          className="inline-block mr-[0.3em] transition-all duration-500"
+          style={{
+            opacity: show ? 1 : 0,
+            transform: show ? 'translateY(0) scale(1)' : 'translateY(14px) scale(0.92)',
+            transitionDelay: `${i * 70}ms`,
+          }}
+        >
+          {word}
+        </span>
+      ))}
+    </p>
+  );
+}
+
 function TypedStatement({ onDone }: { onDone: () => void }) {
   const { displayed, done } = useTypewriter('WHAT IF THE FACTORY CAME OUTSIDE?', 22, 0);
 
@@ -81,21 +102,9 @@ export function FactoryTransitionSection() {
       ref={sectionRef}
       className="relative z-[2] w-full min-h-screen flex flex-col items-center justify-center px-6 text-center"
     >
-      <div className="space-y-3 mb-16">
-        <p
-          className={`text-lg md:text-xl text-white transition-opacity duration-700 ${
-            showLine1 ? 'opacity-100' : 'opacity-0'
-          }`}
-        >
-          5,000 robots. All inside the factory.
-        </p>
-        <p
-          className={`text-lg md:text-xl text-white transition-opacity duration-700 ${
-            showLine2 ? 'opacity-100' : 'opacity-0'
-          }`}
-        >
-          The city outside: empty.
-        </p>
+      <div className="space-y-4 mb-16">
+        <WordReveal text="5,000 robots. All inside the factory." show={showLine1} />
+        <WordReveal text="The outside is empty, and the city feels uninteresting." show={showLine2} />
       </div>
 
       <div className={`transition-opacity duration-700 ${showStatement ? 'opacity-100' : 'opacity-0'}`}>
