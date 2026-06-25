@@ -6,10 +6,10 @@ const LOOP_FADE_SECONDS = 0.4;
 export function VisionSection() {
   const sectionRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
-  const { scrollYProgress } = useScroll({ target: sectionRef, offset: ['start end', 'center center'] });
+  const { scrollYProgress } = useScroll({ target: sectionRef, offset: ['start end', 'end start'] });
 
-  const scale = useTransform(scrollYProgress, [0, 1], [0.4, 1]);
-  const opacity = useTransform(scrollYProgress, [0, 0.4], [0.2, 1]);
+  const scale = useTransform(scrollYProgress, [0, 0.3, 0.7, 1], [0.4, 1, 1, 0.4]);
+  const opacity = useTransform(scrollYProgress, [0, 0.15, 0.85, 1], [0.2, 1, 1, 0.2]);
 
   useEffect(() => {
     const video = videoRef.current;

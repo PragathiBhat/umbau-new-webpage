@@ -32,6 +32,41 @@
   animation: scan-line 3.5s linear infinite;
 }
 
+@keyframes float-mark {
+  0%, 100% { transform: translateY(0); opacity: 0.5; }
+  50% { transform: translateY(-18px); opacity: 0.9; }
+}
+.animate-float-mark {
+  animation: float-mark ease-in-out infinite;
+}
+
+@keyframes ken-burns {
+  0%, 100% { transform: scale(1) translate(0, 0); }
+  50% { transform: scale(1.08) translate(-1%, -1%); }
+}
+.animate-ken-burns {
+  animation: ken-burns 22s ease-in-out infinite;
+}
+
+@keyframes marker-pulse {
+  0%, 100% { opacity: 0.3; transform: scale(1); }
+  50% { opacity: 0.6; transform: scale(1.15); }
+}
+.animate-marker-pulse {
+  animation: marker-pulse 3.5s ease-in-out infinite;
+}
+
+@keyframes robot-jitter {
+  0%, 100% { transform: translate(0, 0) rotate(0deg); }
+  20% { transform: translate(-1.5px, 1px) rotate(-0.6deg); }
+  40% { transform: translate(1px, -1.5px) rotate(0.5deg); }
+  60% { transform: translate(-1px, -1px) rotate(-0.4deg); }
+  80% { transform: translate(1.5px, 1px) rotate(0.6deg); }
+}
+.animate-robot-jitter {
+  animation: robot-jitter 4s ease-in-out infinite;
+}
+
 body {
   margin: 0;
   background: #0a0a0a;

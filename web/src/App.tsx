@@ -7,6 +7,7 @@ import { StatsSection } from './components/StatsSection';
 import { FactoryTransitionSection } from './components/FactoryTransitionSection';
 import { VisionSection } from './components/VisionSection';
 import { ObservationSection } from './components/ObservationSection';
+import { InnovationContrastSection } from './components/InnovationContrastSection';
 import { SiteSection } from './components/SiteSection';
 import { ZoningSection } from './components/ZoningSection';
 import { RobotsSection } from './components/RobotsSection';
@@ -27,6 +28,7 @@ function App() {
       </div>
 
       <StatsSection />
+      <InnovationContrastSection />
       <FactoryTransitionSection />
       <VisionSection />
       <ObservationSection />

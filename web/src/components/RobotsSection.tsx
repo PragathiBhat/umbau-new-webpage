@@ -8,6 +8,7 @@ const ROBOTS = [
     accent: { tint: 'bg-emerald-900/50', pill: 'bg-emerald-500', glow: 'group-hover:border-emerald-500/50' },
     fn: 'Navigates the grid autonomously. Delivers, positions and retrieves every modular element on schedule.',
     image: 'amr-robot.png',
+    jitterDelay: '0s',
   },
   {
     name: 'Gantry',
@@ -16,6 +17,7 @@ const ROBOTS = [
     accent: { tint: 'bg-slate-800/60', pill: 'bg-blue-500', glow: 'group-hover:border-blue-500/50' },
     fn: 'Spans the full plaza width. Lifts and installs large-scale structures — canopies, stages and overhead rigs.',
     image: 'gantry-robot.png',
+    jitterDelay: '0.6s',
   },
   {
     name: 'Arm',
@@ -24,6 +26,7 @@ const ROBOTS = [
     accent: { tint: 'bg-orange-900/50', pill: 'bg-orange-500', glow: 'group-hover:border-orange-500/50' },
     fn: 'Mounted on the gantry. Picks, places and connects modular units — the building hand of the system.',
     image: 'arm-robot.png',
+    jitterDelay: '1.2s',
   },
 ];
 
@@ -43,14 +46,15 @@ export function RobotsSection() {
         {ROBOTS.map((r, i) => (
           <Reveal key={r.name} delay={i * 0.1}>
             <div
-              className={`group rounded-2xl overflow-hidden border border-white/10 bg-white/5 h-full transition-colors ${r.accent.glow}`}
+              className={`group rounded-2xl overflow-hidden border border-white/10 bg-white/5 h-full transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-black/30 ${r.accent.glow}`}
             >
-              <div className={`relative h-48 sm:h-56 flex items-center justify-center ${r.accent.tint}`}>
+              <div className={`relative h-48 sm:h-56 flex items-center justify-center overflow-hidden ${r.accent.tint}`}>
                 {r.image && (
                   <img
                     src={`${import.meta.env.BASE_URL}assets/${r.image}`}
                     alt={`${r.name} robot`}
-                    className="w-full h-full object-contain p-6"
+                    className="w-full h-full object-contain p-6 animate-robot-jitter group-hover:[animation-play-state:paused] group-hover:scale-110 transition-transform duration-300"
+                    style={{ animationDelay: r.jitterDelay }}
                   />
                 )}
               </div>

@@ -58,21 +58,25 @@ export function ZoningSection() {
       </Reveal>
       <Reveal delay={0.05}>
         <h2 className="text-3xl md:text-4xl font-semibold tracking-tight text-white mb-12 max-w-2xl">
-          Eight by eight. Every robot knows its lane.
+          A grid designed for transformation.
         </h2>
       </Reveal>
 
       <Reveal>
-        <div className="mb-4 -mx-6 sm:-mx-10 lg:-mx-24 overflow-hidden">
+        <div className="relative mb-4 -mx-6 sm:-mx-10 lg:-mx-24 overflow-hidden">
           <img
             src={`${import.meta.env.BASE_URL}assets/cad-zoning-plan.jpg`}
             alt="CAD site zoning plan showing playground, event and market zones along Porschestrasse"
             onDoubleClick={openZoom}
-            className="w-full block cursor-zoom-in"
+            className="w-full block cursor-zoom-in animate-ken-burns"
             style={{
               maskImage: 'radial-gradient(ellipse closest-side at center, black 35%, transparent 100%)',
               WebkitMaskImage: 'radial-gradient(ellipse closest-side at center, black 35%, transparent 100%)',
             }}
+          />
+          <div
+            className="absolute rounded-full bg-orange-500/25 blur-3xl animate-marker-pulse pointer-events-none"
+            style={{ left: '64%', top: '24%', width: '18%', height: '40%' }}
           />
         </div>
         <p className="font-mono text-[11px] tracking-[1.5px] text-neutral-500 uppercase text-center mb-16">
