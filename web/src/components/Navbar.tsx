@@ -37,7 +37,13 @@ export function Navbar() {
         <a href="#simulation" onClick={() => setIsMenuOpen(false)} className="hover:text-orange-400 transition-colors">
           Simulation
         </a>
-        <a href="#walkthrough" onClick={() => setIsMenuOpen(false)} className="hover:text-orange-400 transition-colors">
+        <a
+          href="https://phyllis0001.github.io/Video-Webpage/#/"
+          target="_blank"
+          rel="noopener noreferrer"
+          onClick={() => setIsMenuOpen(false)}
+          className="hover:text-orange-400 transition-colors"
+        >
           Virtual Walkthrough
         </a>
       </div>
