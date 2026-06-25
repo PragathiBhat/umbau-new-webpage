@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Reveal } from './Reveal';
 
 const ROBOTS = [
@@ -24,13 +25,15 @@ const ROBOTS = [
     model: 'KR210 R2700-2',
     tag: 'Assembly',
     accent: { tint: 'bg-orange-900/50', pill: 'bg-orange-500', glow: 'group-hover:border-orange-500/50' },
-    fn: 'Mounted on the gantry. Picks, places and connects modular units — the building hand of the system.',
+    fn: 'Mounted on the AGV. Picks, places and connects modular units — the building hand of the system.',
     image: 'arm-robot.png',
     jitterDelay: '1.2s',
   },
 ];
 
 export function RobotsSection() {
+  const [active, setActive] = useState<string | null>(null);
+
   return (
     <section id="the-robots" className="relative z-[2] w-full max-w-7xl mx-auto px-6 py-24">
       <Reveal>
@@ -38,7 +41,7 @@ export function RobotsSection() {
       </Reveal>
       <Reveal delay={0.05}>
         <h2 className="text-3xl md:text-5xl font-extrabold tracking-tight text-white mb-12 text-center">
-          3 types. 3 distinct roles.
+          Bringing the plaza to life with robots.
         </h2>
       </Reveal>
 
@@ -46,7 +49,8 @@ export function RobotsSection() {
         {ROBOTS.map((r, i) => (
           <Reveal key={r.name} delay={i * 0.1}>
             <div
-              className={`group rounded-2xl overflow-hidden border border-white/10 bg-white/5 h-full transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-black/30 ${r.accent.glow}`}
+              onClick={() => setActive((cur) => (cur === r.name ? null : r.name))}
+              className={`group rounded-2xl overflow-hidden border border-white/10 bg-white/5 h-full transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-black/30 cursor-pointer ${r.accent.glow}`}
             >
               <div className={`relative h-48 sm:h-56 flex items-center justify-center overflow-hidden ${r.accent.tint}`}>
                 {r.image && (
@@ -66,7 +70,12 @@ export function RobotsSection() {
                 >
                   {r.tag}
                 </span>
-                <p className="text-sm italic text-neutral-400 leading-6 mt-4">{r.fn}</p>
+                <p className="font-mono text-[11px] tracking-[1.5px] text-neutral-500 uppercase mt-4">
+                  {active === r.name ? 'Tap to hide ▲' : 'Tap to learn more ▼'}
+                </p>
+                {active === r.name && (
+                  <p className="text-sm italic text-neutral-400 leading-6 mt-2">{r.fn}</p>
+                )}
               </div>
             </div>
           </Reveal>
@@ -76,12 +85,12 @@ export function RobotsSection() {
       <Reveal delay={0.3}>
         <div className="text-center">
           <p className="font-mono text-xs tracking-[2px] text-neutral-400 uppercase mb-6">The system hierarchy</p>
-          <div className="flex flex-wrap items-center justify-center gap-3 font-mono text-sm text-[#7FB3DE]">
-            <span className="px-4 py-2 border border-[#4F8FC2]/40 rounded-full">AGV</span>
+          <div className="flex flex-wrap items-center justify-center gap-3 font-mono text-sm text-orange-400">
+            <span className="px-4 py-2 border border-orange-500/40 rounded-full">AGV</span>
             <span className="text-neutral-500">&rarr;</span>
-            <span className="px-4 py-2 border border-[#4F8FC2]/40 rounded-full">Gantry</span>
+            <span className="px-4 py-2 border border-orange-500/40 rounded-full">Gantry</span>
             <span className="text-neutral-500">&rarr;</span>
-            <span className="px-4 py-2 border border-[#4F8FC2]/40 rounded-full">Arm</span>
+            <span className="px-4 py-2 border border-orange-500/40 rounded-full">Arm</span>
           </div>
         </div>
       </Reveal>
