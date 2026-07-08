@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Reveal } from './Reveal';
 import { SectionLabel } from './SectionLabel';
 import { HudCorners } from './HudCorners';
@@ -6,6 +7,7 @@ const STATS = [
   {
     label: 'Population',
     value: '129,560',
+    fact: 'One of Germany\'s most multicultural cities. Over 100 nationalities live here, drawn in across generations by Volkswagen\'s international workforce, from Turkish and Italian guest workers in the 1960s to today\'s global engineering teams.',
     icon: (
       <>
         <circle cx="12" cy="8" r="3.2" />
@@ -16,6 +18,7 @@ const STATS = [
   {
     label: 'Factory robots',
     value: '5,000',
+    fact: 'Each unit works with sub-millimeter precision and near-zero downtime, completing repetitive tasks up to 10x faster than manual labor, a level of efficiency that has never once left the factory floor.',
     icon: (
       <>
         <rect x="7" y="8" width="10" height="9" rx="2" />
@@ -30,11 +33,13 @@ const STATS = [
   {
     label: 'GDP / capita',
     value: '€92,600',
+    fact: "Nearly three times the German national average, making Wolfsburg one of the country's most productive cities per resident. Almost all of it is generated behind factory walls, with little of that energy visible on the streets outside.",
     icon: <path d="M3 17l5-6 4 3 4-7 5 6" />,
   },
   {
     label: 'VW employees',
     value: '65,000',
+    fact: "Roughly half of Wolfsburg's residents work for Volkswagen in some capacity, across three shifts running around the clock. When a shift ends, the city's public spaces empty out just as fast as the factory floor does.",
     icon: (
       <>
         <rect x="3" y="7" width="18" height="12" rx="1.5" />
@@ -45,6 +50,8 @@ const STATS = [
 ];
 
 export function StatsSection() {
+  const [active, setActive] = useState<string | null>(null);
+
   return (
     <section id="the-city" className="relative z-[2] w-full max-w-7xl mx-auto px-6 py-24">
       <Reveal>
@@ -62,19 +69,37 @@ export function StatsSection() {
         </h2>
       </Reveal>
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        {STATS.map((s, i) => (
-          <Reveal key={s.label} delay={i * 0.06}>
-            <div className="relative border border-sci-green/15 p-6 h-full bg-white/5 hover:border-sci-green/50 transition-colors text-center">
-              <HudCorners />
-              <svg viewBox="0 0 24 24" className="w-10 h-10 mb-4 mx-auto stroke-sci-green text-sci-green fill-none stroke-[1.4]">
-                {s.icon}
-              </svg>
-              <div className="font-orbitron text-2xl font-bold text-white tracking-tight">{s.value}</div>
-              <div className="font-mono text-[11px] tracking-[1.5px] text-neutral-400 uppercase mt-2">{s.label}</div>
-            </div>
-          </Reveal>
-        ))}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 items-start">
+        {STATS.map((s, i) => {
+          const isActive = active === s.label;
+          return (
+            <Reveal key={s.label} delay={i * 0.06}>
+              <button
+                type="button"
+                onClick={() => setActive((cur) => (cur === s.label ? null : s.label))}
+                aria-expanded={isActive}
+                className={`group relative w-full border p-6 bg-white/5 transition-colors text-center cursor-pointer ${
+                  isActive ? 'border-sci-green/60' : 'border-sci-green/15 hover:border-sci-green/50'
+                }`}
+              >
+                <HudCorners />
+                <svg viewBox="0 0 24 24" className="w-10 h-10 mb-4 mx-auto stroke-sci-green text-sci-green fill-none stroke-[1.4]">
+                  {s.icon}
+                </svg>
+                <div className="font-orbitron text-2xl font-bold text-white tracking-tight">{s.value}</div>
+                <div className="font-mono text-[11px] tracking-[1.5px] text-neutral-400 uppercase mt-2">{s.label}</div>
+
+                <p className="font-mono text-[10px] tracking-[1.5px] text-sci-green/60 uppercase mt-4">
+                  {isActive ? 'Close ▲' : 'Details ▼'}
+                </p>
+
+                {isActive && (
+                  <p className="text-xs text-neutral-300 leading-5 mt-3 text-left">{s.fact}</p>
+                )}
+              </button>
+            </Reveal>
+          );
+        })}
       </div>
     </section>
   );

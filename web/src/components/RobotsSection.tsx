@@ -8,42 +8,24 @@ const ROBOTS = [
     name: 'AGV',
     model: 'KUKA KMP 1500P',
     tag: 'Logistics',
-    accent: {
-      tint: 'bg-sci-green/10',
-      pill: 'bg-sci-green text-black',
-      glow: 'group-hover:border-sci-green/60',
-      corner: 'green' as const,
-    },
     fn: 'Navigates the grid autonomously. Delivers, positions and retrieves every modular element on schedule.',
-    image: 'amr-robot.png',
+    image: 'robot-agv-line.svg',
     jitterDelay: '0s',
   },
   {
     name: 'Gantry',
     model: 'KR210 Gantry',
     tag: 'Structure',
-    accent: {
-      tint: 'bg-sci-cyan/10',
-      pill: 'bg-sci-cyan text-black',
-      glow: 'group-hover:border-sci-cyan/60',
-      corner: 'cyan' as const,
-    },
-    fn: 'Spans the full plaza width. Lifts and installs large-scale structures — canopies, stages and overhead rigs.',
-    image: 'gantry-robot.png',
+    fn: 'Spans the full plaza width. Lifts and installs large-scale structures: canopies, stages and overhead rigs.',
+    image: 'robot-gantry-line.svg',
     jitterDelay: '0.6s',
   },
   {
     name: 'Arm',
     model: 'KR210 R2700-2',
     tag: 'Assembly',
-    accent: {
-      tint: 'bg-sci-amber/10',
-      pill: 'bg-sci-amber text-black',
-      glow: 'group-hover:border-sci-amber/60',
-      corner: 'green' as const,
-    },
-    fn: 'Mounted on the AGV. Picks, places and connects modular units — the building hand of the system.',
-    image: 'arm-robot.png',
+    fn: 'Mounted on the AGV. Picks, places and connects modular units, the building hand of the system.',
+    image: 'robot-arm-line.svg',
     jitterDelay: '1.2s',
   },
 ];
@@ -67,25 +49,23 @@ export function RobotsSection() {
           <Reveal key={r.name} delay={i * 0.1}>
             <div
               onClick={() => setActive((cur) => (cur === r.name ? null : r.name))}
-              className={`group relative overflow-hidden border border-white/10 bg-white/5 h-full transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-black/30 cursor-pointer ${r.accent.glow}`}
+              className="group relative overflow-hidden border border-white/10 bg-white/5 h-full transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-black/30 hover:border-sci-green/50 cursor-pointer"
             >
-              <HudCorners color={r.accent.corner} />
-              <div className={`relative h-48 sm:h-56 flex items-center justify-center overflow-hidden ${r.accent.tint}`}>
+              <HudCorners color="green" />
+              <div className="relative h-48 sm:h-56 flex items-center justify-center overflow-hidden bg-black/30 bg-blueprint-grid-fine">
                 {r.image && (
                   <img
                     src={`${import.meta.env.BASE_URL}assets/${r.image}`}
-                    alt={`${r.name} robot`}
-                    className="w-full h-full object-contain p-6 animate-robot-jitter group-hover:[animation-play-state:paused] group-hover:scale-110 transition-transform duration-300"
+                    alt={`${r.name} robot line drawing`}
+                    className="w-full h-full object-contain p-8 animate-robot-jitter group-hover:[animation-play-state:paused] group-hover:scale-110 transition-transform duration-300 drop-shadow-[0_0_8px_rgba(61,255,160,0.35)]"
                     style={{ animationDelay: r.jitterDelay }}
                   />
                 )}
               </div>
               <div className="p-6">
                 <h3 className="font-orbitron text-3xl font-extrabold uppercase text-white tracking-tight">{r.name}</h3>
-                <p className="font-mono text-sm text-sci-amber mt-1">{r.model}</p>
-                <span
-                  className={`inline-block mt-3 px-3 py-1 text-xs font-semibold uppercase tracking-wide ${r.accent.pill}`}
-                >
+                <p className="font-mono text-sm text-neutral-400 mt-1">{r.model}</p>
+                <span className="inline-block mt-3 px-3 py-1 text-xs font-semibold uppercase tracking-wide border border-sci-green/50 text-sci-green">
                   {r.tag}
                 </span>
                 <p className="font-mono text-[11px] tracking-[1.5px] text-neutral-500 uppercase mt-4">
@@ -106,9 +86,9 @@ export function RobotsSection() {
           <div className="flex flex-wrap items-center justify-center gap-3 font-mono text-sm text-sci-green mt-3">
             <span className="px-4 py-2 border border-sci-green/40">AGV</span>
             <span className="text-sci-green/40">&rarr;</span>
-            <span className="px-4 py-2 border border-sci-cyan/40 text-sci-cyan">Gantry</span>
+            <span className="px-4 py-2 border border-sci-green/40">Gantry</span>
             <span className="text-sci-green/40">&rarr;</span>
-            <span className="px-4 py-2 border border-sci-amber/40 text-sci-amber">Arm</span>
+            <span className="px-4 py-2 border border-sci-green/40">Arm</span>
           </div>
         </div>
       </Reveal>

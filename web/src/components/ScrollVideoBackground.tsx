@@ -142,8 +142,40 @@ export function ScrollVideoBackground({ fadeZoneId }: { fadeZoneId: string }) {
   }, [fadeZoneId]);
 
   return (
-    <div ref={containerRef} className="fixed inset-0 z-0 bg-[#0a0a0a]" style={{ opacity: 1 }}>
-      <canvas ref={canvasRef} className="absolute inset-0 w-full h-full object-cover contrast-110 brightness-[0.85]" />
+    <div ref={containerRef} className="fixed inset-0 z-0 bg-[#0a0a0a] overflow-hidden" style={{ opacity: 1 }}>
+      <canvas
+        ref={canvasRef}
+        className="absolute inset-0 w-full h-full object-cover contrast-125 saturate-75 brightness-[0.8]"
+      />
+
+      {/* sci-fi duotone color grade */}
+      <div className="absolute inset-0 bg-gradient-to-br from-sci-green/15 via-transparent to-sci-cyan/20 mix-blend-color pointer-events-none" />
+
+      {/* vignette for a camera-feed look */}
+      <div
+        className="absolute inset-0 pointer-events-none"
+        style={{ background: 'radial-gradient(ellipse at center, transparent 40%, rgba(0,0,0,0.6) 100%)' }}
+      />
+
+      {/* live wireframe grid scan */}
+      <div className="absolute inset-0 pointer-events-none mix-blend-screen animate-grid-warp">
+        <div className="absolute inset-0 bg-blueprint-grid animate-grid-scan" />
+      </div>
+
+      {/* HUD telemetry overlay */}
+      <div className="absolute inset-0 pointer-events-none font-mono text-[10px] tracking-[2px] text-sci-green/50 uppercase">
+        <div className="absolute top-24 left-6 flex items-center gap-2">
+          <span className="w-1.5 h-1.5 bg-sci-green shadow-[0_0_6px_#3dffa0] animate-pulse" />
+          Cam_01 // Live feed
+        </div>
+        <div className="absolute top-24 right-6 text-right text-sci-cyan/50">
+          Lat 52.4227° N
+          <br />
+          Lng 10.7865° E
+        </div>
+        <div className="absolute bottom-8 right-6">Feed stable</div>
+      </div>
+
       <video ref={videoRef} muted playsInline preload="auto" className="hidden">
         <source src={VIDEO_URL} type="video/mp4" />
       </video>
