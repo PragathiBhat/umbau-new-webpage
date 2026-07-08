@@ -1,4 +1,6 @@
 import { Reveal } from './Reveal';
+import { SectionLabel } from './SectionLabel';
+import { HudCorners } from './HudCorners';
 
 const STATS = [
   {
@@ -46,11 +48,13 @@ export function StatsSection() {
   return (
     <section id="the-city" className="relative z-[2] w-full max-w-7xl mx-auto px-6 py-24">
       <Reveal>
-        <h3 className="text-2xl md:text-3xl font-semibold uppercase text-white tracking-tight mb-8">The observation</h3>
+        <h3 className="font-orbitron text-2xl md:text-3xl font-bold uppercase text-white tracking-tight mb-8">
+          The observation
+        </h3>
       </Reveal>
 
       <Reveal delay={0.1}>
-        <p className="font-mono text-xs tracking-[2px] text-neutral-400 uppercase mb-3">// The city</p>
+        <SectionLabel>// The city</SectionLabel>
       </Reveal>
       <Reveal delay={0.15}>
         <h2 className="text-xl md:text-2xl font-semibold tracking-tight text-white mb-12 max-w-2xl">
@@ -61,11 +65,12 @@ export function StatsSection() {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {STATS.map((s, i) => (
           <Reveal key={s.label} delay={i * 0.06}>
-            <div className="border border-white/10 rounded-2xl p-6 h-full bg-white/5 hover:border-[#4F8FC2]/40 transition-colors text-center">
-              <svg viewBox="0 0 24 24" className="w-10 h-10 mb-4 mx-auto stroke-orange-500 text-orange-500 fill-none stroke-[1.4]">
+            <div className="relative border border-sci-green/15 p-6 h-full bg-white/5 hover:border-sci-green/50 transition-colors text-center">
+              <HudCorners />
+              <svg viewBox="0 0 24 24" className="w-10 h-10 mb-4 mx-auto stroke-sci-green text-sci-green fill-none stroke-[1.4]">
                 {s.icon}
               </svg>
-              <div className="text-2xl font-semibold text-white tracking-tight">{s.value}</div>
+              <div className="font-orbitron text-2xl font-bold text-white tracking-tight">{s.value}</div>
               <div className="font-mono text-[11px] tracking-[1.5px] text-neutral-400 uppercase mt-2">{s.label}</div>
             </div>
           </Reveal>

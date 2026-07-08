@@ -7,6 +7,7 @@ interface Particle {
   vy: number;
   size: number;
   opacity: number;
+  cyan: boolean;
 }
 
 export function ParticleBackground() {
@@ -29,6 +30,7 @@ export function ParticleBackground() {
           vy: (Math.random() - 0.5) * 0.7,
           size: Math.random() * 2.2 + 0.8,
           opacity: Math.random() * 0.4 + 0.15,
+          cyan: Math.random() < 0.25,
         });
       }
     }
@@ -50,7 +52,7 @@ export function ParticleBackground() {
         if (p.y > canvas.height) p.y = 0;
         ctx.beginPath();
         ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(249,115,22,${p.opacity})`;
+        ctx.fillStyle = p.cyan ? `rgba(43,227,255,${p.opacity})` : `rgba(61,255,160,${p.opacity})`;
         ctx.fill();
       }
       raf = requestAnimationFrame(animate);

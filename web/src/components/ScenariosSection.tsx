@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Reveal } from './Reveal';
+import { SectionLabel } from './SectionLabel';
+import { HudCorners } from './HudCorners';
 
 const SCENARIOS = [
   { key: 'playground', label: 'Playground', video: 'playground.mp4' },
@@ -15,7 +17,7 @@ export function ScenariosSection() {
   return (
     <section id="the-scenarios" className="relative z-[2] w-full max-w-7xl mx-auto px-6 py-24">
       <Reveal>
-        <p className="font-mono text-xs tracking-[2px] text-neutral-400 uppercase mb-3">07 — Live interactions in the plaza</p>
+        <SectionLabel>07 — Live interactions in the plaza</SectionLabel>
       </Reveal>
       <Reveal delay={0.05}>
         <h2 className="text-3xl md:text-4xl font-semibold tracking-tight text-white mb-10 max-w-2xl">
@@ -32,10 +34,10 @@ export function ScenariosSection() {
                 key={s.key}
                 onClick={() => setActive(s.key)}
                 whileTap={{ scale: 0.96 }}
-                className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
+                className={`px-4 py-2 font-mono text-sm uppercase tracking-wide transition-colors cursor-pointer ${
                   isActive
-                    ? 'bg-orange-500 text-white shadow-md shadow-black/20'
-                    : 'bg-white/5 text-neutral-300 border border-white/10 hover:bg-white/10'
+                    ? 'bg-sci-green text-black shadow-[0_0_16px_rgba(61,255,160,0.4)]'
+                    : 'bg-white/5 text-neutral-300 border border-sci-green/20 hover:border-sci-green/50 hover:text-white'
                 }`}
               >
                 {s.label}
@@ -52,11 +54,15 @@ export function ScenariosSection() {
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -12 }}
           transition={{ duration: 0.3 }}
-          className="relative w-full aspect-video rounded-2xl overflow-hidden border border-white/10 bg-[#0a0a0a]"
+          className="relative w-full aspect-video overflow-hidden border border-sci-green/25 bg-[#0a0a0a]"
         >
+          <HudCorners size={4} />
           <video autoPlay muted loop playsInline preload="auto" className="absolute inset-0 w-full h-full object-cover">
             <source src={`${import.meta.env.BASE_URL}assets/${scenario.video}`} type="video/mp4" />
           </video>
+          <div className="absolute top-3 left-4 font-mono text-[11px] tracking-[2px] text-sci-green/80 uppercase pointer-events-none">
+            [ {scenario.label} scenario ]
+          </div>
         </motion.div>
       </AnimatePresence>
     </section>

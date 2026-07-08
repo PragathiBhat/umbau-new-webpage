@@ -1,5 +1,6 @@
 import { useRef, useState } from 'react';
 import { Reveal } from './Reveal';
+import { SectionLabel } from './SectionLabel';
 
 const ZOOM_FOCAL_POINT = { x: 72, y: 40 };
 const ZOOM_SCALE = 2.2;
@@ -54,7 +55,7 @@ export function ZoningSection() {
   return (
     <section id="zoning" className="relative z-[2] w-full max-w-7xl mx-auto px-6 py-24">
       <Reveal>
-        <p className="font-mono text-xs tracking-[2px] text-neutral-400 uppercase mb-3">05 — Site zoning and movement logic</p>
+        <SectionLabel>05 — Site zoning and movement logic</SectionLabel>
       </Reveal>
       <Reveal delay={0.05}>
         <h2 className="text-3xl md:text-4xl font-semibold tracking-tight text-white mb-12 max-w-2xl">
@@ -63,7 +64,7 @@ export function ZoningSection() {
       </Reveal>
 
       <Reveal>
-        <div className="relative mb-4 -mx-6 sm:-mx-10 lg:-mx-24 overflow-hidden">
+        <div className="relative mb-4 -mx-6 sm:-mx-10 lg:-mx-24 overflow-hidden border-y border-sci-green/15">
           <img
             src={`${import.meta.env.BASE_URL}assets/cad-zoning-plan.jpg`}
             alt="CAD site zoning plan showing playground, event and market zones along Porschestrasse"
@@ -75,28 +76,28 @@ export function ZoningSection() {
             }}
           />
           <div
-            className="absolute rounded-full bg-orange-500/25 blur-3xl animate-marker-pulse pointer-events-none"
+            className="absolute rounded-full bg-sci-cyan/20 blur-3xl animate-marker-pulse pointer-events-none"
             style={{ left: '64%', top: '24%', width: '18%', height: '40%' }}
           />
         </div>
-        <p className="font-mono text-[11px] tracking-[1.5px] text-neutral-500 uppercase text-center mb-16">
-          Double-click to zoom into the build site
+        <p className="font-mono text-[11px] tracking-[1.5px] text-sci-green/60 uppercase text-center mb-16">
+          [ Double-click to zoom into the build site ]
         </p>
       </Reveal>
 
       {zoomed && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-md"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-md bg-blueprint-grid"
           onDoubleClick={() => setZoomed(false)}
         >
           <button
             type="button"
             onClick={() => setZoomed(false)}
-            className="absolute top-6 right-6 font-mono text-xs tracking-[1.5px] text-white uppercase border border-white/30 rounded-full px-4 py-2 hover:bg-white/10 transition-colors"
+            className="absolute top-6 right-6 font-mono text-xs tracking-[1.5px] text-sci-green uppercase border border-sci-green/40 px-4 py-2 hover:bg-sci-green/10 transition-colors cursor-pointer"
           >
             ✕ Close
           </button>
-          <div ref={frameRef} className="w-[90vw] h-[90vh] overflow-hidden rounded-2xl border border-white/10">
+          <div ref={frameRef} className="w-[90vw] h-[90vh] overflow-hidden border border-sci-green/30">
             <img
               ref={imgRef}
               src={`${import.meta.env.BASE_URL}assets/cad-zoning-plan.jpg`}
