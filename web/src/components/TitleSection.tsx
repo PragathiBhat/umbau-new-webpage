@@ -1,4 +1,5 @@
 import { motion } from 'motion/react';
+import { Link } from 'react-router-dom';
 import { useTypewriter } from '../hooks/useTypewriter';
 import { RadarRing } from './RadarRing';
 import { getResponsiveCardsScrollTarget } from './FixedCardsSection';
@@ -67,15 +68,13 @@ export function TitleSection() {
             Scroll to view website
           </button>
 
-          <a
-            href="https://phyllis0001.github.io/Video-Webpage/#/"
-            target="_blank"
-            rel="noopener noreferrer"
+          <Link
+            to="/explore"
             className="group flex items-center gap-2.5 border border-sci-cyan/40 px-5 py-3 font-mono text-xs tracking-[2px] uppercase text-sci-cyan hover:bg-sci-cyan/10 hover:border-sci-cyan transition-colors cursor-pointer"
           >
             <span className="inline-block w-1.5 h-1.5 bg-sci-cyan shadow-[0_0_6px_#2be3ff]" />
             Explore the robot plaza
-          </a>
+          </Link>
         </motion.div>
       </main>
     </section>
