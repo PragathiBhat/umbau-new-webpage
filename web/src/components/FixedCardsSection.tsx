@@ -1,9 +1,9 @@
 import { useEffect, useRef } from 'react';
 
 const CARDS = [
-  { word: 'Responsive', subtitle: "Shaping space around people's needs." },
-  { word: 'Alive', subtitle: 'Constantly changing, never standing still.' },
-  { word: 'Playful', subtitle: 'Inviting curiosity, joy, and discovery.' },
+  { num: '01', word: 'Responsive', subtitle: "Shaping space around people's needs." },
+  { num: '02', word: 'Alive', subtitle: 'Constantly changing, never standing still.' },
+  { num: '03', word: 'Playful', subtitle: 'Inviting curiosity, joy, and discovery.' },
 ];
 
 export function FixedCardsSection() {
@@ -57,22 +57,27 @@ export function FixedCardsSection() {
   return (
     <>
       <div ref={fixedRef} className="fixed inset-0 z-[4] px-6 flex items-center justify-center opacity-0">
-        <div className="flex flex-col items-center gap-8 sm:gap-10">
+        <div className="flex flex-col items-stretch w-[min(92vw,460px)] bg-black/45 backdrop-blur-[2px] px-6 py-4 -mx-6">
           {CARDS.map((c, i) => (
             <div key={c.word} className="contents">
               <div
                 ref={(el) => {
                   wordRefs.current[i] = el;
                 }}
-                className="w-[min(90vw,520px)] rounded-3xl bg-black/55 px-8 py-10 text-center"
+                className="relative border-l-2 border-sci-green/60 pl-6 py-5 text-left"
               >
-                <h3 className="font-display text-[clamp(2rem,9vw,4.5rem)] font-light uppercase text-white leading-none tracking-wide">
+                <p className="font-mono text-[11px] tracking-[4px] text-sci-green uppercase mb-2 text-glow-green">
+                  {c.num}
+                </p>
+                <h3 className="font-orbitron text-2xl sm:text-3xl font-semibold uppercase text-white leading-none tracking-wide drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]">
                   {c.word}
                 </h3>
-                <p className="mt-4 text-base sm:text-lg text-neutral-300">{c.subtitle}</p>
+                <p className="mt-2.5 text-sm sm:text-base text-neutral-100">{c.subtitle}</p>
               </div>
               {i < CARDS.length - 1 && (
-                <span className="w-2.5 h-2.5 rounded-full bg-white/70" aria-hidden="true" />
+                <div className="pl-6 py-2" aria-hidden="true">
+                  <span className="block w-px h-6 bg-sci-green/40" />
+                </div>
               )}
             </div>
           ))}

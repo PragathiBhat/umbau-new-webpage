@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useTypewriter } from '../hooks/useTypewriter';
+import { HudCorners } from './HudCorners';
 
 type Stage = 'idle' | 'line1' | 'line2' | 'locked' | 'statement' | 'done';
 
@@ -32,10 +33,10 @@ function TypedStatement({ onDone }: { onDone: () => void }) {
   }, [done, onDone]);
 
   return (
-    <h2 className="font-orbitron text-2xl sm:text-3xl md:text-4xl font-extrabold uppercase tracking-wide text-orange-500">
+    <h2 className="font-orbitron text-2xl sm:text-3xl md:text-4xl font-extrabold uppercase tracking-wide text-sci-green text-glow-green">
       {displayed}
       {!done && (
-        <span className="inline-block w-[3px] h-[0.8em] bg-orange-500 align-middle ml-[3px] animate-blink" />
+        <span className="inline-block w-[3px] h-[0.8em] bg-sci-green align-middle ml-[3px] animate-blink" />
       )}
     </h2>
   );
@@ -102,13 +103,17 @@ export function FactoryTransitionSection() {
       ref={sectionRef}
       className="relative z-[2] w-full min-h-screen flex flex-col items-center justify-center px-6 text-center"
     >
-      <div className="space-y-4 mb-16">
-        <WordReveal text="5,000 robots. All inside the factory." show={showLine1} />
-        <WordReveal text="The outside is empty, and the city feels uninteresting." show={showLine2} />
-      </div>
+      <div className="relative w-full max-w-4xl border border-sci-green/40 px-8 py-16 sm:py-20">
+        <HudCorners size={5} />
 
-      <div className={`transition-opacity duration-700 ${showStatement ? 'opacity-100' : 'opacity-0'}`}>
-        {showStatement && <TypedStatement onDone={() => setStage('done')} />}
+        <div className="space-y-4 mb-16">
+          <WordReveal text="5,000 robots. All inside the factory." show={showLine1} />
+          <WordReveal text="The outside is empty, and the city feels uninteresting." show={showLine2} />
+        </div>
+
+        <div className={`transition-opacity duration-700 ${showStatement ? 'opacity-100' : 'opacity-0'}`}>
+          {showStatement && <TypedStatement onDone={() => setStage('done')} />}
+        </div>
       </div>
     </section>
   );

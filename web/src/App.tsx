@@ -17,8 +17,9 @@ import { EndingSection } from './components/EndingSection';
 
 function App() {
   return (
-    <div className="relative bg-[#0a0a0a] text-white font-sans selection:bg-white/20 selection:text-white antialiased overflow-x-hidden">
+    <div className="relative bg-[#0a0a0a] text-white font-sans selection:bg-sci-green/30 selection:text-white antialiased overflow-x-hidden">
       <ScrollVideoBackground fadeZoneId="video-zone" />
+      <div className="fixed inset-0 z-[1] bg-blueprint-grid pointer-events-none" aria-hidden="true" />
       <ParticleBackground />
       <Navbar />
 

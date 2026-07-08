@@ -1,14 +1,13 @@
 import { useEffect, useRef, useState } from 'react';
-
-type Stage = 'idle' | 'playing' | 'fading' | 'statement';
+import { SectionLabel } from './SectionLabel';
+import { Reveal } from './Reveal';
 
 const FLOATING_MARKS = [
-  { top: '15%', left: '10%', size: 'text-6xl', delay: '0s', duration: '6s' },
-  { top: '70%', left: '18%', size: 'text-4xl', delay: '0.8s', duration: '7s' },
-  { top: '25%', left: '85%', size: 'text-5xl', delay: '1.4s', duration: '5.5s' },
-  { top: '80%', left: '80%', size: 'text-7xl', delay: '0.4s', duration: '6.5s' },
-  { top: '10%', left: '55%', size: 'text-3xl', delay: '2s', duration: '7.5s' },
-  { top: '60%', left: '50%', size: 'text-5xl', delay: '1s', duration: '6s' },
+  { top: '15%', left: '8%', size: 'text-4xl', delay: '0s', duration: '6s' },
+  { top: '60%', left: '15%', size: 'text-3xl', delay: '0.8s', duration: '7s' },
+  { top: '20%', left: '88%', size: 'text-4xl', delay: '1.4s', duration: '5.5s' },
+  { top: '65%', left: '85%', size: 'text-5xl', delay: '0.4s', duration: '6.5s' },
+  { top: '10%', left: '50%', size: 'text-2xl', delay: '2s', duration: '7.5s' },
 ];
 
 const SIDES = [
@@ -16,7 +15,7 @@ const SIDES = [
     key: 'autostadt',
     label: 'Autostadt',
     tagline: 'Engineered for change.',
-    video: 'autostadt.mp4',
+    video: 'robot-video.mp4',
   },
   {
     key: 'marktplatz',
@@ -61,7 +60,7 @@ function VideoPanel({
       )}
       <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-black/30" />
       <div className="absolute bottom-6 left-6 right-6">
-        <p className="font-mono text-xs tracking-[2px] text-orange-500 uppercase mb-1">{label}</p>
+        <p className="font-mono text-xs tracking-[2px] text-sci-cyan uppercase mb-1">{label}</p>
         <p className="text-white text-base sm:text-lg font-medium">{tagline}</p>
       </div>
     </div>
@@ -72,7 +71,6 @@ export function InnovationContrastSection() {
   const sectionRef = useRef<HTMLDivElement>(null);
   const autostadtRef = useRef<HTMLVideoElement>(null);
   const marktplatzRef = useRef<HTMLVideoElement>(null);
-  const [stage, setStage] = useState<Stage>('idle');
   const startedRef = useRef(false);
 
   useEffect(() => {
@@ -84,7 +82,6 @@ export function InnovationContrastSection() {
         for (const entry of entries) {
           if (entry.isIntersecting && !startedRef.current) {
             startedRef.current = true;
-            setStage('playing');
 
             const videos = [autostadtRef.current, marktplatzRef.current].filter(
               (v): v is HTMLVideoElement => v !== null,
@@ -114,33 +111,16 @@ export function InnovationContrastSection() {
     return () => observer.disconnect();
   }, []);
 
-  useEffect(() => {
-    if (stage === 'idle') return;
-    const timers: number[] = [];
-
-    if (stage === 'playing') {
-      timers.push(window.setTimeout(() => setStage('fading'), 9000));
-    }
-    if (stage === 'fading') {
-      timers.push(window.setTimeout(() => setStage('statement'), 1500));
-    }
-
-    return () => timers.forEach(clearTimeout);
-  }, [stage]);
-
-  const showBlackout = stage === 'fading' || stage === 'statement';
-  const showStatement = stage === 'statement';
-
   return (
     <section ref={sectionRef} className="relative z-[2] w-full min-h-screen flex flex-col">
-      <div className="px-6 pt-24 pb-10 max-w-4xl mx-auto text-center">
-        <p className="font-mono text-xs tracking-[2px] text-neutral-400 uppercase mb-3">// Innovation, contained</p>
+      <div className="px-6 pt-24 pb-6 max-w-4xl mx-auto text-center">
+        <SectionLabel className="justify-center">// Innovation, contained</SectionLabel>
         <h2 className="text-2xl md:text-4xl font-semibold tracking-tight text-white">
           One city. Contrasting environments.
         </h2>
       </div>
 
-      <div className="relative flex-1 grid md:grid-cols-2 min-h-[70vh]">
+      <div className="relative flex-1 grid md:grid-cols-2 min-h-0">
         {SIDES.map((side) => (
           <VideoPanel
             key={side.key}
@@ -150,30 +130,24 @@ export function InnovationContrastSection() {
             videoRef={side.key === 'autostadt' ? autostadtRef : marktplatzRef}
           />
         ))}
+      </div>
 
-        <div
-          className={`absolute inset-0 bg-black transition-opacity duration-[1500ms] pointer-events-none ${
-            showBlackout ? 'opacity-100' : 'opacity-0'
-          }`}
-        />
-        <div
-          className={`absolute inset-0 flex items-center justify-center px-6 transition-opacity duration-700 pointer-events-none ${
-            showStatement ? 'opacity-100' : 'opacity-0'
-          }`}
-        >
-          {FLOATING_MARKS.map((mark, i) => (
-            <span
-              key={i}
-              className={`absolute font-bold text-orange-500/70 animate-float-mark ${mark.size}`}
-              style={{ top: mark.top, left: mark.left, animationDelay: mark.delay, animationDuration: mark.duration }}
-            >
-              ?
-            </span>
-          ))}
-          <p className="relative text-2xl sm:text-3xl md:text-4xl font-semibold tracking-tight text-white text-center max-w-2xl">
+      <div className="relative flex flex-col items-center justify-center px-6 py-8 sm:py-10 overflow-hidden">
+        {FLOATING_MARKS.map((mark, i) => (
+          <span
+            key={i}
+            className={`absolute font-bold font-orbitron text-sci-cyan/30 animate-float-mark pointer-events-none ${mark.size}`}
+            style={{ top: mark.top, left: mark.left, animationDelay: mark.delay, animationDuration: mark.duration }}
+            aria-hidden="true"
+          >
+            ?
+          </span>
+        ))}
+        <Reveal className="relative w-full">
+          <p className="font-orbitron text-[clamp(1.1rem,4.5vw,2.5rem)] font-semibold uppercase tracking-tight text-sci-green text-glow-green text-center whitespace-nowrap">
             Why does innovation stop here?
           </p>
-        </div>
+        </Reveal>
       </div>
     </section>
   );

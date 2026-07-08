@@ -1,7 +1,12 @@
 import { useEffect, useRef } from 'react';
 import { Reveal } from './Reveal';
+import { SectionLabel } from './SectionLabel';
+import { HudCorners } from './HudCorners';
 
 const LOOP_FADE_SECONDS = 0.5;
+const FAST_START_SECONDS = 3;
+const FAST_RATE = 1.4;
+const SLOW_RATE = 0.35;
 
 const REASONS = [
   {
@@ -33,10 +38,14 @@ export function SiteSection() {
     const video = videoRef.current;
     if (!video) return;
 
-    video.playbackRate = 0.4;
+    video.playbackRate = FAST_RATE;
 
     const handleTimeUpdate = () => {
       if (!video.duration || !isFinite(video.duration)) return;
+
+      const desiredRate = video.currentTime < FAST_START_SECONDS ? FAST_RATE : SLOW_RATE;
+      if (video.playbackRate !== desiredRate) video.playbackRate = desiredRate;
+
       const timeFromEnd = video.duration - video.currentTime;
       const fade =
         timeFromEnd < LOOP_FADE_SECONDS
@@ -52,7 +61,7 @@ export function SiteSection() {
   return (
     <section id="the-site" className="relative z-[2] w-full max-w-7xl mx-auto px-6 py-24">
       <Reveal>
-        <p className="font-mono text-xs tracking-[2px] text-neutral-400 uppercase mb-3">04 — Target location acquired</p>
+        <SectionLabel>04 — Target location acquired</SectionLabel>
       </Reveal>
       <Reveal delay={0.05}>
         <h2 className="text-3xl md:text-4xl font-semibold tracking-tight text-white mb-12 max-w-2xl">
@@ -62,7 +71,8 @@ export function SiteSection() {
 
       <div className="flex flex-col items-center mb-16">
         <Reveal className="w-full max-w-4xl">
-          <div className="relative rounded-2xl overflow-hidden border border-white/10 bg-[#0a0a0a] aspect-video">
+          <div className="relative overflow-hidden border border-sci-green/20 bg-[#0a0a0a] aspect-video">
+            <HudCorners />
             <video
               ref={videoRef}
               autoPlay
@@ -77,8 +87,8 @@ export function SiteSection() {
           </div>
         </Reveal>
         <Reveal delay={0.1} className="mt-8 text-center">
-          <div className="font-sans text-sm text-neutral-400 leading-7">
-            <p className="text-white font-medium mb-2">Marktplatz · Porschestrasse · Wolfsburg</p>
+          <div className="font-mono text-sm text-neutral-400 leading-7">
+            <p className="text-sci-green mb-2 tracking-wide">Marktplatz · Porschestrasse · Wolfsburg</p>
             <p>Lat: <span className="text-white">52.4227° N</span> / Lng: <span className="text-white">10.7865° E</span></p>
             <p>Footprint: <span className="text-white">84 × 28m</span> / Area: <span className="text-white">2,353m²</span></p>
           </div>
@@ -88,8 +98,9 @@ export function SiteSection() {
       <div className="grid sm:grid-cols-2 gap-4">
         {REASONS.map((r, i) => (
           <Reveal key={r.num} delay={i * 0.08}>
-            <div className="border border-white/10 rounded-2xl p-6 h-full bg-white/5">
-              <div className="font-mono text-xs text-neutral-500 mb-2">{r.num}</div>
+            <div className="relative border border-sci-green/15 p-6 h-full bg-white/5 hover:border-sci-green/40 transition-colors">
+              <HudCorners size={2.5} />
+              <div className="font-mono text-xs text-sci-green/70 mb-2">[{r.num}]</div>
               <h3 className="text-base font-semibold text-white mb-2">{r.title}</h3>
               <p className="text-sm text-neutral-400 leading-6">{r.body}</p>
             </div>
