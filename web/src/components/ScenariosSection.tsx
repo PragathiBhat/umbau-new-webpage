@@ -36,7 +36,7 @@ export function ScenariosSection() {
                 whileTap={{ scale: 0.96 }}
                 className={`px-4 py-2 font-mono text-sm uppercase tracking-wide transition-colors cursor-pointer ${
                   isActive
-                    ? 'bg-sci-green text-black shadow-[0_0_16px_rgba(61,255,160,0.4)]'
+                    ? 'bg-sci-green text-black shadow-[0_0_16px_rgba(46,255,77,0.4)]'
                     : 'bg-white/5 text-neutral-300 border border-sci-green/20 hover:border-sci-green/50 hover:text-white'
                 }`}
               >

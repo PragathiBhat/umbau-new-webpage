@@ -1,5 +1,6 @@
 import { ParticleBackground } from './components/ParticleBackground';
 import { ScrollVideoBackground } from './components/ScrollVideoBackground';
+import { BackToTopButton } from './components/BackToTopButton';
 import { TitleSection } from './components/TitleSection';
 import { FixedCardsSection } from './components/FixedCardsSection';
 import { StatsSection } from './components/StatsSection';
@@ -37,6 +38,8 @@ function App() {
       <ConstructionSimulationSection />
       <ScenariosSection />
       <EndingSection />
+
+      <BackToTopButton />
     </div>
   );
 }

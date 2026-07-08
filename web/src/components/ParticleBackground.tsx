@@ -52,7 +52,7 @@ export function ParticleBackground() {
         if (p.y > canvas.height) p.y = 0;
         ctx.beginPath();
         ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-        ctx.fillStyle = p.cyan ? `rgba(43,227,255,${p.opacity})` : `rgba(61,255,160,${p.opacity})`;
+        ctx.fillStyle = p.cyan ? `rgba(43,227,255,${p.opacity})` : `rgba(46,255,77,${p.opacity})`;
         ctx.fill();
       }
       raf = requestAnimationFrame(animate);

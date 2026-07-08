@@ -4,9 +4,6 @@ import { SectionLabel } from './SectionLabel';
 import { HudCorners } from './HudCorners';
 
 const LOOP_FADE_SECONDS = 0.5;
-const FAST_START_SECONDS = 3;
-const FAST_RATE = 1.4;
-const SLOW_RATE = 0.35;
 
 const REASONS = [
   {
@@ -38,13 +35,8 @@ export function SiteSection() {
     const video = videoRef.current;
     if (!video) return;
 
-    video.playbackRate = FAST_RATE;
-
     const handleTimeUpdate = () => {
       if (!video.duration || !isFinite(video.duration)) return;
-
-      const desiredRate = video.currentTime < FAST_START_SECONDS ? FAST_RATE : SLOW_RATE;
-      if (video.playbackRate !== desiredRate) video.playbackRate = desiredRate;
 
       const timeFromEnd = video.duration - video.currentTime;
       const fade =
