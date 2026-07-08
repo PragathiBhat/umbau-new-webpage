@@ -93,7 +93,7 @@ export function EndingSection() {
         </p>
         <div ref={creditsRef} className="relative text-center mt-12 opacity-0">
           <p className="font-orbitron text-lg font-bold uppercase tracking-[3px] text-sci-green text-glow-green">
-            Project Umbau
+            Robonexus
           </p>
           <p className="font-mono text-xs tracking-[1.5px] text-sci-green/60 uppercase mt-2">
             Marktplatz · Porschestrasse · Wolfsburg · 2026
@@ -106,28 +106,6 @@ export function EndingSection() {
             Pragathi Bhat Prakash
           </p>
           <p className="font-mono text-xs text-neutral-400 mt-4">Bauhaus-Universität Weimar</p>
-        </div>
-
-        <div className="absolute bottom-6 left-6 hidden sm:flex flex-col gap-0.5 pointer-events-none">
-          <div className="flex items-center gap-2">
-            <span className="w-2 h-2 bg-sci-green shadow-[0_0_8px_#3dffa0]" />
-            <span className="font-orbitron text-sm tracking-[2px] text-white/80">UMBAU</span>
-          </div>
-          <span className="font-mono text-[10px] tracking-[3px] text-sci-green/50 uppercase pl-4">
-            An Intera Project
-          </span>
-        </div>
-
-        <div className="absolute bottom-6 right-6 hidden sm:flex items-center gap-4 font-mono text-[10px] tracking-[1.5px] text-neutral-500 uppercase pointer-events-none">
-          <span className="flex items-center gap-1.5">
-            <span className="w-2.5 h-2.5 bg-sci-green/60 border border-sci-green" /> Robots
-          </span>
-          <span className="flex items-center gap-1.5">
-            <span className="w-2.5 h-2.5 bg-sci-cyan/40 border border-sci-cyan hud-hatch" /> Zones
-          </span>
-          <span className="flex items-center gap-1.5">
-            <span className="w-2.5 h-2.5 border border-white/40" /> Structure
-          </span>
         </div>
       </div>
 
