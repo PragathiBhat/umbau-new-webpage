@@ -9,7 +9,7 @@ export function SectionLabel({
   color?: 'green' | 'cyan';
   className?: string;
 }) {
-  const dot = color === 'cyan' ? 'bg-sci-cyan shadow-[0_0_6px_#2be3ff]' : 'bg-sci-green shadow-[0_0_6px_#3dffa0]';
+  const dot = color === 'cyan' ? 'bg-sci-cyan shadow-[0_0_6px_#2be3ff]' : 'bg-sci-green shadow-[0_0_6px_#2eff4d]';
   const text = color === 'cyan' ? 'text-sci-cyan/90' : 'text-sci-green/90';
 
   return (

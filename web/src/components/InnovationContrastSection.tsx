@@ -60,7 +60,7 @@ function VideoPanel({
       )}
       <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-black/30" />
       <div className="absolute bottom-6 left-6 right-6">
-        <p className="font-mono text-xs tracking-[2px] text-sci-cyan uppercase mb-1">{label}</p>
+        <p className="font-mono text-xs tracking-[2px] text-sci-green uppercase mb-1">{label}</p>
         <p className="text-white text-base sm:text-lg font-medium">{tagline}</p>
       </div>
     </div>
@@ -136,7 +136,7 @@ export function InnovationContrastSection() {
         {FLOATING_MARKS.map((mark, i) => (
           <span
             key={i}
-            className={`absolute font-bold font-orbitron text-sci-cyan/30 animate-float-mark pointer-events-none ${mark.size}`}
+            className={`absolute font-bold font-orbitron text-sci-green/30 animate-float-mark pointer-events-none ${mark.size}`}
             style={{ top: mark.top, left: mark.left, animationDelay: mark.delay, animationDuration: mark.duration }}
             aria-hidden="true"
           >

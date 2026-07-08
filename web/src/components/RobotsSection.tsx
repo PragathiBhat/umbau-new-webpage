@@ -57,7 +57,7 @@ export function RobotsSection() {
                   <img
                     src={`${import.meta.env.BASE_URL}assets/${r.image}`}
                     alt={`${r.name} robot line drawing`}
-                    className="w-full h-full object-contain p-8 animate-robot-jitter group-hover:[animation-play-state:paused] group-hover:scale-110 transition-transform duration-300 drop-shadow-[0_0_8px_rgba(61,255,160,0.35)]"
+                    className="w-full h-full object-contain p-8 animate-robot-jitter group-hover:[animation-play-state:paused] group-hover:scale-110 transition-transform duration-300 drop-shadow-[0_0_8px_rgba(46,255,77,0.35)]"
                     style={{ animationDelay: r.jitterDelay }}
                   />
                 )}

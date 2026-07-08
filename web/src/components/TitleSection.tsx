@@ -63,7 +63,7 @@ export function TitleSection() {
             onClick={handleScrollDown}
             className="group flex items-center gap-2.5 border border-sci-green/40 px-5 py-3 font-mono text-xs tracking-[2px] uppercase text-sci-green hover:bg-sci-green/10 hover:border-sci-green transition-colors cursor-pointer"
           >
-            <span className="inline-block w-1.5 h-1.5 bg-sci-green shadow-[0_0_6px_#3dffa0] animate-pulse" />
+            <span className="inline-block w-1.5 h-1.5 bg-sci-green shadow-[0_0_6px_#2eff4d] animate-pulse" />
             Scroll to view website
           </button>
 

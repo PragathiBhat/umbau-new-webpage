@@ -76,7 +76,7 @@ export function EndingSection() {
           style={{
             opacity: 0,
             backgroundImage:
-              'linear-gradient(to right, rgba(61,255,160,0.12) 1px, transparent 1px), linear-gradient(to bottom, rgba(61,255,160,0.12) 1px, transparent 1px)',
+              'linear-gradient(to right, rgba(46,255,77,0.12) 1px, transparent 1px), linear-gradient(to bottom, rgba(46,255,77,0.12) 1px, transparent 1px)',
             backgroundSize: '48px 48px',
           }}
         />
