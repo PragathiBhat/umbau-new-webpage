@@ -69,7 +69,7 @@ export function ZoningSection() {
 
       <Reveal>
         <div
-          className="relative -mx-6 sm:-mx-10 lg:-mx-24 border-y border-sci-green/15 bg-black"
+          className="relative border border-sci-green/15 bg-black"
           style={{ paddingTop: DIM_REACH + 12, paddingLeft: DIM_REACH + 12 }}
         >
           <div className="relative">
