@@ -23,7 +23,7 @@ export function ObservationSection() {
         </video>
         <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-black/30" />
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute inset-x-0 top-[-10%] h-24 bg-gradient-to-b from-transparent via-sci-cyan/40 to-transparent animate-scan-line" />
+          <div className="absolute inset-x-0 top-[-10%] h-24 bg-gradient-to-b from-transparent via-sci-green/40 to-transparent animate-scan-line" />
         </div>
       </div>
     </section>

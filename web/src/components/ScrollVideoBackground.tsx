@@ -164,11 +164,11 @@ export function ScrollVideoBackground({ fadeZoneId }: { fadeZoneId: string }) {
 
       {/* HUD telemetry overlay */}
       <div className="absolute inset-0 pointer-events-none font-mono text-[10px] tracking-[2px] text-sci-green/50 uppercase">
-        <div className="absolute top-24 left-6 flex items-center gap-2">
+        <div className="absolute top-6 left-6 flex items-center gap-2">
           <span className="w-1.5 h-1.5 bg-sci-green shadow-[0_0_6px_#3dffa0] animate-pulse" />
           Cam_01 // Live feed
         </div>
-        <div className="absolute top-24 right-6 text-right text-sci-cyan/50">
+        <div className="absolute top-6 right-6 text-right text-sci-cyan/50">
           Lat 52.4227° N
           <br />
           Lng 10.7865° E
