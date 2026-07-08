@@ -1,4 +1,3 @@
-import { Navbar } from './components/Navbar';
 import { ParticleBackground } from './components/ParticleBackground';
 import { ScrollVideoBackground } from './components/ScrollVideoBackground';
 import { TitleSection } from './components/TitleSection';
@@ -21,7 +20,6 @@ function App() {
       <ScrollVideoBackground fadeZoneId="video-zone" />
       <div className="fixed inset-0 z-[1] bg-blueprint-grid pointer-events-none" aria-hidden="true" />
       <ParticleBackground />
-      <Navbar />
 
       <div id="video-zone" className="relative">
         <TitleSection />
