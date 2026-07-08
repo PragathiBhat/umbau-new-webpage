@@ -1,12 +1,28 @@
 import { motion } from 'motion/react';
 import { useTypewriter } from '../hooks/useTypewriter';
 import { RadarRing } from './RadarRing';
+import { getResponsiveCardsScrollTarget } from './FixedCardsSection';
 
 export function TitleSection() {
-  const { displayed, done } = useTypewriter('PROJEKT UMBAU');
+  const { displayed, done } = useTypewriter('ROBONEXUS');
 
   function handleScrollDown() {
-    window.scrollBy({ top: window.innerHeight * 0.92, behavior: 'smooth' });
+    const target = getResponsiveCardsScrollTarget();
+    const startY = window.scrollY;
+    const distance = (target ?? startY + window.innerHeight * 0.92) - startY;
+    const duration = 1600;
+    const startTime = performance.now();
+
+    const easeInOutQuad = (t: number) => (t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2);
+
+    function step(now: number) {
+      const elapsed = now - startTime;
+      const progress = Math.min(1, elapsed / duration);
+      window.scrollTo(0, startY + distance * easeInOutQuad(progress));
+      if (progress < 1) requestAnimationFrame(step);
+    }
+
+    requestAnimationFrame(step);
   }
 
   return (
@@ -33,7 +49,7 @@ export function TitleSection() {
           transition={{ duration: 0.6, delay: 0.2 }}
           className="text-lg md:text-xl text-neutral-300 max-w-xl mb-10"
         >
-          Bringing the factory to life for the city.
+          An interactive urban system.
         </motion.p>
 
         <motion.div

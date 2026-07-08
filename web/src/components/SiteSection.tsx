@@ -16,7 +16,7 @@ const REASONS = [
   },
   {
     num: '02',
-    title: 'Already car-free — more freedom',
+    title: 'Already car-free, more freedom',
     body: 'No traffic or barriers. The fully pedestrianized plaza allows uninterrupted robot access and makes the space easier to reprogram.',
   },
   {

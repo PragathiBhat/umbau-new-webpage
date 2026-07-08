@@ -6,6 +6,24 @@ const CARDS = [
   { num: '03', word: 'Playful', subtitle: 'Inviting curiosity, joy, and discovery.' },
 ];
 
+const TRIGGER_ID = 'responsive-cards-trigger';
+
+/** Absolute scroll position where the first card has settled into view. */
+export function getResponsiveCardsScrollTarget(): number | null {
+  const trigger = document.getElementById(TRIGGER_ID);
+  if (!trigger) return null;
+
+  const rect = trigger.getBoundingClientRect();
+  const triggerTop = rect.top + window.scrollY;
+  const vh = window.innerHeight;
+  const start = triggerTop - vh * 0.5;
+  const end = triggerTop + rect.height - vh * 1.6;
+  const range = end - start;
+
+  const firstCardSettledProgress = 1 / CARDS.length + 0.03;
+  return start + firstCardSettledProgress * range;
+}
+
 export function FixedCardsSection() {
   const triggerRef = useRef<HTMLDivElement>(null);
   const fixedRef = useRef<HTMLDivElement>(null);
@@ -81,10 +99,15 @@ export function FixedCardsSection() {
               )}
             </div>
           ))}
+
+          <p className="font-mono text-[10px] tracking-[3px] text-sci-green/60 uppercase mt-6 pl-6 flex items-center gap-2">
+            <span className="inline-block w-1 h-1 bg-sci-green/60 animate-pulse" />
+            Scroll further
+          </p>
         </div>
       </div>
       <div className="h-[80vh]" />
-      <div ref={triggerRef} className="h-[200vh]" />
+      <div ref={triggerRef} id={TRIGGER_ID} className="h-[200vh]" />
     </>
   );
 }

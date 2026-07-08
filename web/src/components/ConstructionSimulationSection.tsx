@@ -24,9 +24,29 @@ export function ConstructionSimulationSection() {
             preload="auto"
             controls
             className="absolute inset-0 w-full h-full object-contain"
+            style={{
+              filter: 'grayscale(0.7) sepia(0.6) hue-rotate(75deg) saturate(2.2) brightness(0.95) contrast(1.1)',
+            }}
           >
             <source src={`${import.meta.env.BASE_URL}assets/configuration.mp4`} type="video/mp4" />
           </video>
+
+          {/* matrix-style scanline sweep */}
+          <div className="absolute inset-0 overflow-hidden pointer-events-none">
+            <div className="absolute inset-x-0 top-[-10%] h-24 bg-gradient-to-b from-transparent via-sci-green/15 to-transparent animate-scan-line" />
+          </div>
+
+          {/* vignette + fine scanline texture for a subtle CRT feel */}
+          <div
+            className="absolute inset-0 pointer-events-none mix-blend-multiply"
+            style={{
+              backgroundImage: 'repeating-linear-gradient(to bottom, rgba(0,0,0,0.18) 0px, rgba(0,0,0,0.18) 1px, transparent 1px, transparent 3px)',
+            }}
+          />
+          <div
+            className="absolute inset-0 pointer-events-none"
+            style={{ background: 'radial-gradient(ellipse at center, transparent 55%, rgba(0,0,0,0.4) 100%)' }}
+          />
         </div>
       </Reveal>
     </section>
