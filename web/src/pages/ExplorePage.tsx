@@ -17,7 +17,7 @@ export function ExplorePage() {
         src={INTRO_URL}
         title="Robonexus intro"
         allow="autoplay"
-        className="absolute inset-0 w-full h-full border-0"
+        className="absolute inset-0 block w-full h-full border-0"
       />
     </div>
   );
