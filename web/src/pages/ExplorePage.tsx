@@ -1,63 +1,8 @@
-import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ParticleBackground } from '../components/ParticleBackground';
 import { HudCorners } from '../components/HudCorners';
 import { SectionLabel } from '../components/SectionLabel';
 import { triggerScenarioMarker } from '../lib/robonexusSync';
-
-// The full "digital twin scan" opening (particle site formation + ROBONEXUS
-// wordmark + narrated voiceover + video-mosaic reveal) from the
-// ROBONEXUS-OPENING repo, embedded as-is via iframe rather than ported into
-// React — it's a self-contained, already-tuned Three.js/WebGL scene with its
-// own audio EQ pipeline and animation timeline, and re-implementing that here
-// would risk breaking the tuning for no benefit.
-const OPENING_SRC = `${import.meta.env.BASE_URL}assets/robonexus-opening/index.html`;
-
-// Safety net only — the opening drives its own pacing (flight, formation,
-// hold, video-mosaic reveal) and we advance the instant its narration audio
-// fires 'ended'. This fallback only fires if that never happens (asset
-// failed to load, autoplay blocked with no fallback gesture, etc.).
-const FALLBACK_DURATION_MS = 90_000;
-
-function IntroOverlay({ onSkip, onDone }: { onSkip: () => void; onDone: () => void }) {
-  const iframeRef = useRef<HTMLIFrameElement>(null);
-
-  useEffect(() => {
-    const timer = setTimeout(onDone, FALLBACK_DURATION_MS);
-    return () => clearTimeout(timer);
-  }, [onDone]);
-
-  function handleIframeLoad() {
-    const audio = iframeRef.current?.contentDocument?.getElementById('narration');
-    if (audio instanceof HTMLAudioElement) {
-      audio.addEventListener('ended', onDone, { once: true });
-    }
-  }
-
-  return (
-    <div className="fixed inset-0 z-50 bg-black overflow-hidden">
-      <iframe
-        ref={iframeRef}
-        src={OPENING_SRC}
-        onLoad={handleIframeLoad}
-        title="Robonexus opening sequence"
-        className="absolute inset-0 w-full h-full border-0"
-        allow="autoplay"
-      />
-
-      <button
-        type="button"
-        onClick={onSkip}
-        className="absolute bottom-8 right-8 z-10 flex items-center gap-2 border border-sci-green/40 bg-black/60 px-4 py-2 font-mono text-xs tracking-[2px] uppercase text-sci-green hover:bg-sci-green/10 hover:border-sci-green transition-colors cursor-pointer"
-      >
-        Skip intro
-        <svg viewBox="0 0 24 24" className="w-3.5 h-3.5 fill-none stroke-current stroke-[2.5]">
-          <path d="M5 5l7 7-7 7M13 5l7 7-7 7" />
-        </svg>
-      </button>
-    </div>
-  );
-}
 
 const CATEGORIES = [
   {
@@ -84,12 +29,8 @@ const CATEGORIES = [
 ];
 
 export function ExplorePage() {
-  const [showIntro, setShowIntro] = useState(true);
-
   return (
     <div className="relative min-h-screen w-full bg-[#0a0a0a] text-white font-sans antialiased overflow-x-hidden">
-      {showIntro && <IntroOverlay onSkip={() => setShowIntro(false)} onDone={() => setShowIntro(false)} />}
-
       <div className="fixed inset-0 z-[1] bg-blueprint-grid pointer-events-none" aria-hidden="true" />
       <ParticleBackground />
 
