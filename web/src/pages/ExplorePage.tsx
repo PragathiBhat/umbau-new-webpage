@@ -5,7 +5,10 @@
 // self-contained canvas/WebGL scene. Its own script hands the top-level
 // page off to the floor plan once the narration ends or Skip is clicked --
 // see public/assets/robonexus-opening/index.html.
-const INTRO_URL = '/assets/robonexus-opening/index.html';
+// Uses Vite's BASE_URL (e.g. "/umbau-new-webpage/" in production, "/"
+// locally) rather than a hardcoded root-relative path, since this site is
+// deployed under a repo subpath on GitHub Pages.
+const INTRO_URL = `${import.meta.env.BASE_URL}assets/robonexus-opening/index.html`;
 
 export function ExplorePage() {
   return (
