@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { ParticleBackground } from '../components/ParticleBackground';
 import { HudCorners } from '../components/HudCorners';
 import { SectionLabel } from '../components/SectionLabel';
+import { triggerScenarioMarker } from '../lib/robonexusSync';
 
 // The full "digital twin scan" opening (particle site formation + ROBONEXUS
 // wordmark + narrated voiceover + video-mosaic reveal) from the
@@ -84,9 +85,6 @@ const CATEGORIES = [
 
 export function ExplorePage() {
   const [showIntro, setShowIntro] = useState(true);
-  const [selectedId, setSelectedId] = useState<string | null>(null);
-
-  const selected = CATEGORIES.flatMap((c) => c.scenarios).find((s) => s.id === selectedId);
 
   return (
     <div className="relative min-h-screen w-full bg-[#0a0a0a] text-white font-sans antialiased overflow-x-hidden">
@@ -114,65 +112,28 @@ export function ExplorePage() {
           Select a scenario to step into the plaza and see how the robots reshape it.
         </p>
 
-        <div className="grid sm:grid-cols-3 gap-5">
+        <div className="grid sm:grid-cols-3 gap-5 flex-1">
           {[0, 1].flatMap((row) =>
             CATEGORIES.map((c) => {
               const s = c.scenarios[row];
-              const isSelected = s.id === selectedId;
               return (
                 <button
                   key={s.id}
                   type="button"
-                  onClick={() => setSelectedId(s.id)}
-                  aria-pressed={isSelected}
-                  className={`group relative flex flex-col border p-8 text-left transition-colors cursor-pointer ${
-                    isSelected
-                      ? 'border-sci-green bg-sci-green/10 shadow-[0_0_24px_rgba(46,255,77,0.15)]'
-                      : 'border-sci-green/20 bg-white/5 hover:border-sci-green/60 hover:bg-sci-green/5'
-                  }`}
+                  onClick={() => triggerScenarioMarker(s.id)}
+                  className="group relative flex flex-col border border-sci-green/20 bg-white/5 hover:border-sci-green/60 hover:bg-sci-green/5 transition-colors p-8 text-left cursor-pointer"
                 >
                   <HudCorners />
-                  <p
-                    className={`font-mono text-[11px] tracking-[3px] uppercase mb-3 ${
-                      isSelected ? 'text-sci-green' : 'text-sci-green/60'
-                    }`}
-                  >
+                  <p className="font-mono text-[11px] tracking-[3px] text-sci-green/60 uppercase mb-3">
                     {c.category}
                   </p>
-                  <h3
-                    className={`font-orbitron text-xl font-bold uppercase tracking-wide transition-colors ${
-                      isSelected ? 'text-sci-green text-glow-green' : 'text-white group-hover:text-sci-green'
-                    }`}
-                  >
+                  <h3 className="font-orbitron text-xl font-bold uppercase tracking-wide text-white group-hover:text-sci-green transition-colors">
                     {s.label}
                   </h3>
-                  {isSelected && (
-                    <span className="absolute top-4 right-4 w-2 h-2 bg-sci-green shadow-[0_0_6px_#2eff4d] animate-pulse" />
-                  )}
                 </button>
               );
             }),
           )}
-        </div>
-
-        <div
-          className={`mt-8 flex items-center justify-between gap-4 border border-sci-green/30 bg-black/40 px-6 py-4 transition-opacity duration-300 ${
-            selected ? 'opacity-100' : 'opacity-0 pointer-events-none'
-          }`}
-        >
-          <p className="font-mono text-xs sm:text-sm tracking-[2px] uppercase text-neutral-300">
-            Selected: <span className="text-sci-green">{selected?.label ?? ''}</span>
-          </p>
-          <button
-            type="button"
-            disabled={!selected}
-            className="flex items-center gap-2 border border-sci-green/40 px-5 py-2.5 font-mono text-xs tracking-[2px] uppercase text-sci-green hover:bg-sci-green/10 hover:border-sci-green transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
-          >
-            Enter scenario
-            <svg viewBox="0 0 24 24" className="w-3.5 h-3.5 fill-none stroke-current stroke-[2.5]">
-              <path d="M5 12h14M13 6l6 6-6 6" />
-            </svg>
-          </button>
         </div>
       </div>
     </div>
