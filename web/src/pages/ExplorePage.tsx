@@ -1,9 +1,14 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ParticleBackground } from '../components/ParticleBackground';
 import { HudCorners } from '../components/HudCorners';
 import { SectionLabel } from '../components/SectionLabel';
-import { triggerDisplayReload, triggerScenarioMarker } from '../lib/robonexusSync';
+import {
+  setVoiceoverVolume,
+  triggerDisplayReload,
+  triggerScenarioMarker,
+  triggerSkipIntro,
+} from '../lib/robonexusSync';
 
 const CATEGORIES = [
   {
@@ -30,11 +35,19 @@ const CATEGORIES = [
 ];
 
 export function ExplorePage() {
+  const [volume, setVolume] = useState(1);
+
   useEffect(() => {
     // Fires once on landing here — not on leaving. Nothing happens to the
     // display when navigating away from this page.
     triggerDisplayReload();
   }, []);
+
+  function handleVolumeChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const next = Number(e.target.value) / 100;
+    setVolume(next);
+    setVoiceoverVolume(next);
+  }
 
   return (
     <div className="relative min-h-screen w-full bg-[#0a0a0a] text-white font-sans antialiased overflow-x-hidden">
@@ -56,9 +69,40 @@ export function ExplorePage() {
         <h1 className="font-orbitron text-3xl md:text-5xl font-extrabold tracking-tight text-white mb-4">
           Explore the robot plaza.
         </h1>
-        <p className="text-neutral-400 max-w-xl mb-14">
+        <p className="text-neutral-400 max-w-xl mb-10">
           Select a scenario to step into the plaza and see how the robots reshape it.
         </p>
+
+        <div className="flex flex-col sm:flex-row sm:items-center gap-6 sm:gap-10 mb-14 border border-sci-green/20 bg-white/5 px-6 py-5">
+          <div className="flex items-center gap-4 flex-1">
+            <label
+              htmlFor="voiceover-volume"
+              className="font-mono text-[11px] tracking-[3px] text-sci-green/60 uppercase whitespace-nowrap"
+            >
+              Voiceover volume
+            </label>
+            <input
+              id="voiceover-volume"
+              type="range"
+              min={0}
+              max={100}
+              value={Math.round(volume * 100)}
+              onChange={handleVolumeChange}
+              className="flex-1 accent-sci-green"
+            />
+            <span className="font-mono text-xs text-neutral-400 w-9 text-right">
+              {Math.round(volume * 100)}%
+            </span>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => triggerSkipIntro()}
+            className="font-mono text-xs tracking-[2px] uppercase text-sci-green/80 border border-sci-green/40 hover:border-sci-green hover:bg-sci-green/10 transition-colors px-5 py-2.5 whitespace-nowrap cursor-pointer"
+          >
+            Skip intro
+          </button>
+        </div>
 
         <div className="grid sm:grid-cols-3 gap-5 flex-1">
           {[0, 1].flatMap((row) =>

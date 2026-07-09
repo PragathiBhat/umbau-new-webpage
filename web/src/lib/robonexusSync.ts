@@ -47,6 +47,25 @@ export function triggerDisplayReload(): void {
   });
 }
 
+// Tells the intro page to stop the narration and skip straight to its
+// "Let's Start the Experience" hand-off text, bypassing the rest of the
+// particle-formation scene. One-shot action, not a persisted state.
+export function triggerSkipIntro(): void {
+  set(ref(db, 'skipIntro'), Date.now()).catch((err) => {
+    console.warn('Could not reach the Robonexus sync database:', err);
+  });
+}
+
+// Sets the intro narration's playback volume (0-1) on the display device.
+// Unlike the triggers above this is persisted state, not a one-shot event --
+// it also applies on page load so the intro starts at whatever level was
+// last chosen here.
+export function setVoiceoverVolume(volume: number): void {
+  set(ref(db, 'voiceoverVolume'), volume).catch((err) => {
+    console.warn('Could not reach the Robonexus sync database:', err);
+  });
+}
+
 // Fires `onActivity` whenever a scenario marker is selected on the shared
 // channel, regardless of which device/page triggered it -- our own scenario
 // buttons, a click on floorplan.html, anywhere. Used to pulse the particle
