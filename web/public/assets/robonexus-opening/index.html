@@ -1,0 +1,1077 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>RoboNexus — Digital Twin Scan</title>
+<style>
+  :root{
+    --bg:#000000;
+    --white:#eaf6ff;
+    --blue:#3fa9ff;
+    --cyan:#4ee89a;
+  }
+  *{ box-sizing:border-box; }
+  html,body{
+    margin:0; padding:0; width:100%; height:100%; background:#000;
+    font-family:'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+    overflow:hidden;
+  }
+  #scene-canvas{
+    position:fixed; inset:0; width:100%; height:100%; display:block;
+    z-index:1;
+  }
+
+  /* ---------- In-scan HUD ---------- */
+  #sceneHud{
+    position:fixed; inset:0; z-index:5; pointer-events:none;
+    padding:28px; opacity:0; transition:opacity 0.8s ease;
+  }
+  #sceneHud.visible{ opacity:1; }
+  #sceneHud .label-top{
+    position:absolute; top:34px; left:70px;
+    font-family:'Consolas',monospace; font-size:12px; letter-spacing:2px;
+    text-transform:uppercase; color:var(--cyan); opacity:0.85;
+  }
+  #sceneHud .label-top small{
+    display:block; font-size:10px; color:rgba(234,246,255,0.5); letter-spacing:1px; margin-top:4px;
+  }
+  /* ---------- Hidden video element: pure texture source for the particle-mosaic
+     video reveal — the particles themselves display the video, so this stays
+     invisible (kept in-layout rather than display:none, since some browsers
+     stop decoding frames on a display:none video). ---------- */
+  #revealVideo{
+    position:fixed; inset:0; width:100%; height:100%;
+    opacity:0; pointer-events:none;
+  }
+  /* ---------- Sound prompt: shown only if the browser blocked autoplay-with-
+     sound (no prior user gesture) — see startNarration(). Fades out the
+     instant playback actually starts. ---------- */
+  #soundPrompt{
+    position:fixed; left:50%; bottom:40px; transform:translateX(-50%);
+    z-index:10; pointer-events:none;
+    font-family:'Consolas',monospace; font-size:12px; letter-spacing:2px;
+    text-transform:uppercase; color:rgba(234,246,255,0.85);
+    background:rgba(0,0,0,0.35); border:1px solid rgba(111,233,255,0.4);
+    padding:10px 18px; border-radius:2px;
+    opacity:0; transition:opacity 0.5s ease;
+  }
+  #soundPrompt.visible{
+    opacity:1;
+    animation:soundPromptPulse 1.8s ease-in-out infinite;
+  }
+  @keyframes soundPromptPulse{
+    0%, 100%{ opacity:0.7; } 50%{ opacity:1; }
+  }
+
+  /* ---------- Skip button: jumps straight to the floor plan. ---------- */
+  #skipButton{
+    position:fixed; right:28px; bottom:28px; z-index:20;
+    font-family:'Consolas',monospace; font-size:12px; letter-spacing:2px;
+    text-transform:uppercase; color:rgba(234,246,255,0.85);
+    background:rgba(0,0,0,0.35); border:1px solid rgba(111,233,255,0.4);
+    padding:10px 18px; border-radius:2px; cursor:pointer;
+    transition:background 0.2s ease, border-color 0.2s ease;
+  }
+  #skipButton:hover{
+    background:rgba(111,233,255,0.12); border-color:rgba(111,233,255,0.8);
+  }
+  #skipButton{ transition:opacity 0.4s ease, background 0.2s ease, border-color 0.2s ease; }
+  #skipButton.hidden{ opacity:0; pointer-events:none; }
+
+  /* ---------- Hand-off fade: covers the scan/reveal once the voiceover
+     ends (or Skip is clicked), before handing off to the floor plan. ---------- */
+  #fadeOverlay{
+    position:fixed; inset:0; z-index:50; background:#000;
+    opacity:0; pointer-events:none; transition:opacity 1.2s ease;
+  }
+  #fadeOverlay.visible{ opacity:1; }
+
+  /* ---------- "Let's start the experience" hand-off screen: shown once the
+     fade-to-black is fully opaque, sitting above it; a deliberate beat
+     between the intro and the floor plan rather than an automatic cut. ---------- */
+  #startPrompt{
+    position:fixed; inset:0; z-index:60;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    gap:22px; text-align:center; padding:0 6%;
+    opacity:0; pointer-events:none; transition:opacity 1s ease;
+  }
+  #startPrompt.visible{ opacity:1; }
+  #startPrompt .headline{
+    font-family:'Iceland','Agency FB','Bahnschrift','Consolas',sans-serif;
+    font-weight:400; letter-spacing:0.28em; text-transform:uppercase;
+    font-size:clamp(24px, 5.2vh, 52px); color:#FFFFFF;
+    text-shadow:0 0 10px rgba(255,255,255,0.65), 0 0 22px rgba(255,255,255,0.35);
+  }
+</style>
+</head>
+<body>
+
+<canvas id="scene-canvas"></canvas>
+
+<video id="revealVideo" muted loop playsinline preload="auto">
+  <source src="vn-site-loop.mp4" type="video/mp4">
+</video>
+
+<audio id="narration" preload="auto">
+  <source src="narration.mp3" type="audio/mpeg">
+</audio>
+
+<div id="sceneHud">
+  <div class="label-top">SITE SCAN // DIGITAL TWIN
+    <small id="labelSmall">Aerial reconstruction · point cloud</small>
+  </div>
+</div>
+
+<div id="soundPrompt">Click anywhere for sound</div>
+
+<button id="skipButton" type="button">Skip intro</button>
+
+<div id="fadeOverlay"></div>
+
+<div id="startPrompt">
+  <div class="headline">Let's Start the Experience</div>
+</div>
+
+<script src="vendor/three.min.js"></script>
+
+<script>
+(function(){
+  "use strict";
+
+  // ==========================================================================
+  // Config
+  // ==========================================================================
+  // Float32, stride 12: sx,sy,sz,tx,ty,tz,r,g,b,size,revealAt,settleDur — only
+  // tx,ty,tz / r,g,b / size are used; the sx/sy/sz/revealAt/settleDur fields
+  // are legacy and unused now that formation is driven entirely by uFormTrigger.
+  var DATA_URL = 'site-points-forming.bin?v=2';
+
+  var FLY_DURATION = 5.5;         // seconds particles fly/scatter before slowly forming the site
+  var MIN_FLY_BEFORE_SKIP = 1.5;  // seconds that must pass before a tap is allowed to skip the flying — guards against an accidental early tap (e.g. a stray second click right after Start) cutting the flying phase short
+  var RING_SWEEP_TIME = 3.2;      // seconds for one loop of the ambient scan ring while flying
+  var SWEEP_SPAN = 1.2;           // seconds over which the formation sweeps outward from the center
+  var FORM_DUR_MIN = 0.9, FORM_DUR_MAX = 1.6; // seconds each particle takes to ease into place, once its turn comes
+  var TOTAL_FORM_TIME = SWEEP_SPAN + FORM_DUR_MAX; // worst-case total time for the whole site to finish assembling
+  var DOLLY_DURATION = TOTAL_FORM_TIME; // camera settles into the close orbit over the same span as the formation
+
+  // video reveal: once the particle site has held fully formed for
+  // REVEAL_HOLD seconds, the particles echo the intro's fly-then-form motion
+  // once more — scatter apart (same wide chaotic flight), then converge again,
+  // but this time onto a flat mosaic that samples the real aerial video live
+  // (each particle's existing site-plan position doubles as its pixel address
+  // into the video frame), so the particles themselves become the video.
+  var REVEAL_HOLD = 3.0; // seconds to hold the formed site before it starts diffusing/flying around again
+  var DISPERSE_DURATION = 2.0;    // seconds the formed particles scatter apart again
+  var VIDEO_FORM_DUR = 0.6;       // seconds for particles to converge onto the video mosaic — short and snappy, a sudden snap rather than a slow systematic sweep
+  var VIDEO_STAGGER = 0.15;       // small per-particle random stagger so the snap isn't perfectly robotic
+
+  var VIDEO_PLANE_WIDTH = 24, VIDEO_PLANE_HEIGHT = 13.5; // world units, matches the video's 16:9 aspect
+  var VIDEO_PLANE_CENTER_Y = 7, VIDEO_PLANE_Z = 0;
+  var VIDEO_VIEW_DIST = 20; // camera distance from the plane once settled facing it
+  var VIDEO_POINT_SIZE = 0.145; // uniform per-particle size once forming the video (original aSize values are architectural — wildly uneven for buildings vs. roads, which reads as blotchy/unclear as a pixel grid); slightly smaller than the gap-covering minimum for sharper, more resolved detail
+
+  var POINT_SIZE_SCALE = 620; // px-world constant driving on-screen point size (was 260 — bumped so the cloud reads as dense/solid rather than sparse)
+
+  // final steady-state orbit once the site has formed
+  var ORBIT_RADIUS_MIN = 16, ORBIT_RADIUS_MAX = 26, ORBIT_RADIUS_PERIOD = 42;
+  var ORBIT_HEIGHT_MIN = 5,  ORBIT_HEIGHT_MAX = 12, ORBIT_HEIGHT_PERIOD = 65;
+
+  // title wordmark: a second, independent particle swarm that assembles into
+  // "ROBONEXUS" during the flying/scan phase, then disperses the moment the
+  // site itself starts forming (see triggerFormation) — a hand-off from logo
+  // to model using the same fly/converge motion language as the main cloud.
+  // It always faces the camera (billboarded via uCamRight/uCamUp each frame)
+  // since the camera orbits continuously even while flying.
+  var TITLE_TEXT = 'ROBONEXUS';
+  var TITLE_WORLD_WIDTH = 26;   // world units wide the assembled title spans
+  var TITLE_POINT_SIZE = 0.42;  // uniform per-particle size — the flying-phase camera sits ~60 units out the whole
+                                 // time the title is held (the dolly-in only starts once the site forms), so this
+                                 // needs to read clearly from that distance, not the site's close-orbit distance
+  var TITLE_CENTER = new THREE.Vector3(0, 8, 0); // billboard pivot — within the flying cloud's altitude band
+  var TITLE_FORM_DELAY = 0.9;   // seconds into the flying phase before the title starts assembling
+  var TITLE_SWEEP_SPAN = 0.9;   // seconds over which the title assembles left-to-right
+  var TITLE_FORM_DUR_MIN = 0.7, TITLE_FORM_DUR_MAX = 1.3; // seconds each title particle takes to ease into place
+  var TITLE_DISPERSE_FADE = TITLE_FORM_DUR_MAX + 0.6; // seconds after dispersing before the title is hidden entirely
+
+  var particleData = null;
+  var particleCount = 0;
+  var maxRadial = 1;
+  var videoGridUV = null; // per-particle UV address into the video frame — see buildSite()
+  var VIDEO_ASPECT = 1280 / 720;
+
+  function buildSite(){
+    return fetch(DATA_URL).then(function(resp){ return resp.arrayBuffer(); }).then(function(buf){
+      particleData = new Float32Array(buf);
+      particleCount = particleData.length / 12;
+
+      // one-time scan (not per-frame) to find the site's plan radius, so the
+      // ambient scan ring can be sized to the site without hardcoding it.
+      var mr = 0;
+      for(var i=0;i<particleCount;i++){
+        var o = i*12;
+        var tx = particleData[o+3], tz = particleData[o+5];
+        var r = Math.sqrt(tx*tx + tz*tz);
+        if(r > mr) mr = r;
+      }
+      maxRadial = mr;
+
+      // Assign each particle a UV address by its index in a uniform grid
+      // sized to the video's aspect ratio — NOT by its (tx,tz) site position.
+      // Using the site position would only fill in wherever the site itself
+      // has particles (dense over buildings, empty over gaps), producing a
+      // site-shaped silhouette instead of a full picture. An index-based grid
+      // covers the whole frame evenly regardless of the site's layout, since
+      // the video color is looked up fresh from this UV at render time.
+      var gridCols = Math.round(Math.sqrt(particleCount * VIDEO_ASPECT));
+      var gridRows = Math.ceil(particleCount / gridCols);
+      videoGridUV = new Float32Array(particleCount * 2);
+      for(var j=0;j<particleCount;j++){
+        var col = j % gridCols;
+        var row = (j / gridCols) | 0;
+        videoGridUV[j*2]   = (col + 0.5) / gridCols;
+        videoGridUV[j*2+1] = (row + 0.5) / gridRows;
+      }
+    });
+  }
+
+  // Samples the title text into a flat point cloud: draws it letter-by-letter
+  // (fixed advance, not relying on canvas letter-spacing support) onto an
+  // offscreen canvas, then keeps every "lit" pixel above an alpha threshold as
+  // one particle's local (x,y) target, centered on and scaled to
+  // TITLE_WORLD_WIDTH. A random per-particle seed (not the local position) is
+  // used to drive the flying/twinkle hashes in the shader — hashing off the
+  // text's own (x,y) would clump particles that share a row/column onto
+  // near-identical pseudo-random values, since the text is thin in y.
+  function buildTitleGeometry(){
+    var FS = 150, LETTER_SPACING = 22, PAD = 40;
+    var tmp = document.createElement('canvas');
+    var tctx = tmp.getContext('2d');
+    tctx.font = 'bold ' + FS + 'px Consolas, monospace';
+    var charWidth = tctx.measureText('M').width;
+    var advance = charWidth + LETTER_SPACING;
+    var totalWidth = Math.ceil(advance * TITLE_TEXT.length - LETTER_SPACING) + PAD*2;
+    var totalHeight = Math.ceil(FS * 1.3) + PAD*2;
+    tmp.width = totalWidth;
+    tmp.height = totalHeight;
+    tctx = tmp.getContext('2d'); // resizing the canvas resets its context state
+    tctx.font = 'bold ' + FS + 'px Consolas, monospace';
+    tctx.fillStyle = '#fff';
+    tctx.textBaseline = 'alphabetic';
+    var x = PAD, baselineY = PAD + FS * 0.92;
+    for(var i=0;i<TITLE_TEXT.length;i++){
+      tctx.fillText(TITLE_TEXT[i], x, baselineY);
+      x += advance;
+    }
+
+    var img = tctx.getImageData(0, 0, totalWidth, totalHeight).data;
+    var STRIDE = 2;
+    var xs = [], ys = [];
+    for(var py=0; py<totalHeight; py+=STRIDE){
+      for(var px=0; px<totalWidth; px+=STRIDE){
+        if(img[(py*totalWidth+px)*4 + 3] > 128){ xs.push(px); ys.push(py); }
+      }
+    }
+
+    var scale = TITLE_WORLD_WIDTH / totalWidth;
+    var count = xs.length;
+    var positions = new Float32Array(count*3);
+    var seeds = new Float32Array(count*3);
+    for(var k=0;k<count;k++){
+      positions[k*3]   = (xs[k] - totalWidth/2) * scale;
+      positions[k*3+1] = (totalHeight/2 - ys[k]) * scale;
+      positions[k*3+2] = 0;
+      seeds[k*3]   = Math.random();
+      seeds[k*3+1] = Math.random();
+      seeds[k*3+2] = Math.random();
+    }
+    return { positions: positions, seeds: seeds, count: count };
+  }
+
+  // ==========================================================================
+  // Three.js scene
+  // ==========================================================================
+  var renderer, scene, camera, points, ringMesh, clock;
+  var titlePoints;
+  var _tmpRight, _tmpUp;
+  var initialized = false;
+
+  function makeSprite(){
+    var c = document.createElement('canvas');
+    c.width = c.height = 64;
+    var ctx = c.getContext('2d');
+    ctx.save();
+    ctx.translate(32,32);
+    ctx.scale(1, 0.32);
+    ctx.translate(-32,-32);
+    var g = ctx.createLinearGradient(4,32, 58,32);
+    g.addColorStop(0.0,  'rgba(255,255,255,0)');
+    g.addColorStop(0.30, 'rgba(255,255,255,0.35)');
+    g.addColorStop(0.62, 'rgba(255,255,255,0.85)');
+    g.addColorStop(1.0,  'rgba(255,255,255,1)');
+    ctx.fillStyle = g;
+    ctx.beginPath();
+    ctx.ellipse(32,32,28,28,0,0,Math.PI*2);
+    ctx.fill();
+    ctx.restore();
+    var tex = new THREE.CanvasTexture(c);
+    tex.generateMipmaps = false;
+    tex.minFilter = THREE.LinearFilter;
+    tex.magFilter = THREE.LinearFilter;
+    return tex;
+  }
+
+  // A plain round, soft-edged dot — full coverage in every direction, unlike
+  // the elongated comet-streak sprite above (which is squashed thin on one
+  // axis for the wind-blown look; at grid scale during the video mosaic that
+  // thinness leaves gaps between rows of particles, visible as horizontal
+  // lines across the image).
+  function makeRoundSprite(){
+    var c = document.createElement('canvas');
+    c.width = c.height = 64;
+    var ctx = c.getContext('2d');
+    var g = ctx.createRadialGradient(32,32,0,32,32,30);
+    g.addColorStop(0.0, 'rgba(255,255,255,1)');
+    g.addColorStop(0.85, 'rgba(255,255,255,1)');
+    g.addColorStop(1.0, 'rgba(255,255,255,0)');
+    ctx.fillStyle = g;
+    ctx.beginPath();
+    ctx.arc(32,32,30,0,Math.PI*2);
+    ctx.fill();
+    var tex = new THREE.CanvasTexture(c);
+    tex.generateMipmaps = false;
+    tex.minFilter = THREE.LinearFilter;
+    tex.magFilter = THREE.LinearFilter;
+    return tex;
+  }
+
+  function makeRingTexture(){
+    var c = document.createElement('canvas');
+    c.width = c.height = 256;
+    var ctx = c.getContext('2d');
+    var g = ctx.createRadialGradient(128,128,90,128,128,128);
+    g.addColorStop(0,   'rgba(111,233,255,0)');
+    g.addColorStop(0.75,'rgba(111,233,255,0.55)');
+    g.addColorStop(0.9, 'rgba(234,246,255,0.9)');
+    g.addColorStop(1,   'rgba(111,233,255,0)');
+    ctx.fillStyle = g;
+    ctx.fillRect(0,0,256,256);
+    return new THREE.CanvasTexture(c);
+  }
+
+  // GPU-driven: particles fly in a wide chaotic scatter until uFormTrigger is
+  // set (the moment the state machine decides to start forming), then each
+  // particle eases from its scattered/flying position into its actual site
+  // position. The delay before a particle starts easing in is driven by its
+  // planar distance from the center (rNorm), so the site assembles slowly as
+  // an outward ripple rather than snapping into place all at once.
+  // uFormTrigger < 0 means "not yet triggered — keep flying". Once
+  // uVideoTrigger is set, each particle also blends toward a flat mosaic
+  // plane at its own aVideoGridUV address (a uniform grid assigned by index
+  // in buildSite(), not by site position — see there for why) and samples the
+  // live video texture at render time — so the particles become the video.
+  var vertexShader = [
+    'attribute vec3 aColor;',
+    'attribute float aSize;',
+    'attribute vec2 aVideoGridUV;',
+    'uniform float uTime;',
+    'uniform float uFormTrigger;',
+    'uniform float uDisperseTrigger;',
+    'uniform float uMaxRadial;',
+    'uniform float uVideoTrigger;',
+    'varying vec3 vColor;',
+    'varying float vIntensity;',
+    'varying float vStreakAngle;',
+    'varying vec2 vVideoUV;',
+    'varying float vVideoBlend;',
+    'float hash13(vec3 p){',
+    '  p = fract(p * 0.3183099 + 0.1);',
+    '  p *= 17.0;',
+    '  return fract(p.x * p.y * p.z * (p.x + p.y + p.z));',
+    '}',
+    'void main(){',
+    '  vColor = aColor;',
+    '  float h = hash13(position.xyz);',
+    '  float hx = hash13(position.xyz + 11.0);',
+    '  float hy = hash13(position.xyz + 23.0);',
+    '  float hz = hash13(position.xyz + 41.0);',
+    '  float phase = h * 6.28318;',
+    '  float phA1 = hx * 6.28318;',
+    '  float phA2 = hy * 6.28318;',
+    '  float speed = 0.5 + h * 1.1;',
+    '  float twinkle = 1.05 + 0.35 * sin(uTime * speed + phase);',
+    '  float scatterAngle = h * 6.28318;',
+    '  float scatterRad = 16.0 + hx * 34.0;',
+    '  vec3 scatterPos = vec3(cos(scatterAngle)*scatterRad, 3.0 + hy * 26.0, sin(scatterAngle)*scatterRad);',
+    '  float flowSpeed1 = 0.35 + hx * 0.55;',
+    '  float flowSpeed2 = 0.28 + hy * 0.5;',
+    '  float flowSpeed3 = 0.4 + hz * 0.55;',
+    '  float flightAmp = 9.0;',
+    '  vec3 flight = vec3(',
+    '    sin(uTime * flowSpeed1 + phA1) * flightAmp + sin(uTime * flowSpeed3 * 0.6 + phA2) * flightAmp * 0.4,',
+    '    cos(uTime * flowSpeed2 * 1.1 + phA2) * flightAmp * 0.6,',
+    '    cos(uTime * flowSpeed1 * 0.8 + phA1 * 1.3) * flightAmp + sin(uTime * flowSpeed3 + phA1) * flightAmp * 0.4',
+    '  );',
+    '  float planarR = length(position.xz);',
+    '  float rNorm = clamp(planarR / max(uMaxRadial, 0.001), 0.0, 1.0);',
+    '  float formDelay = rNorm * ' + SWEEP_SPAN.toFixed(2) + ' + hz * 0.4;',
+    '  float formDur = ' + FORM_DUR_MIN.toFixed(2) + ' + hx * ' + (FORM_DUR_MAX-FORM_DUR_MIN).toFixed(2) + ';',
+    '  float localT = (uFormTrigger < 0.0) ? -1.0 : (uTime - uFormTrigger - formDelay);',
+    '  vec3 basePos;',
+    '  float intensity;',
+    '  if(localT <= 0.0){',
+    '    float flyIntensity = 0.4 + 0.2 * max(0.0, sin(uTime * speed + phase));',
+    '    if(uDisperseTrigger >= 0.0){',
+    '      float dt = clamp((uTime - uDisperseTrigger - formDelay) / formDur, 0.0, 1.0);',
+    '      float de = 1.0 - pow(1.0 - dt, 3.0);',
+    '      basePos = mix(position, scatterPos + flight, de);',
+    '      intensity = mix(twinkle, flyIntensity, de);',
+    '    } else {',
+    '      basePos = scatterPos + flight;',
+    '      intensity = flyIntensity;',
+    '    }',
+    '  } else {',
+    '    float tt = clamp(localT / formDur, 0.0, 1.0);',
+    '    float e = 1.0 - pow(1.0 - tt, 3.0);',
+    '    basePos = mix(scatterPos, position, e) + flight * (1.0 - e);',
+    '    intensity = (0.4 + 0.6 * e) * twinkle;',
+    '  }',
+    '  vec2 videoUV = aVideoGridUV;',
+    '  vVideoUV = vec2(videoUV.x, 1.0 - videoUV.y);',
+    '  float videoBlend = 0.0;',
+    '  if(uVideoTrigger >= 0.0){',
+    '    vec3 videoPlanePos = vec3((videoUV.x - 0.5) * ' + VIDEO_PLANE_WIDTH.toFixed(2) + ', ' + VIDEO_PLANE_CENTER_Y.toFixed(2) + ' + (0.5 - videoUV.y) * ' + VIDEO_PLANE_HEIGHT.toFixed(2) + ', ' + VIDEO_PLANE_Z.toFixed(2) + ');',
+    '    float videoDelay = hz * ' + VIDEO_STAGGER.toFixed(2) + ';',
+    '    float vt = clamp((uTime - uVideoTrigger - videoDelay) / ' + VIDEO_FORM_DUR.toFixed(2) + ', 0.0, 1.0);',
+    '    videoBlend = 1.0 - pow(1.0 - vt, 3.0);',
+    '    basePos = mix(basePos, videoPlanePos, videoBlend);',
+    '    intensity = mix(intensity, 0.22, videoBlend);', // was 0.34 — the ~950k particles overlap heavily on screen once squeezed onto the mosaic plane, and additive blending sums their brightness rather than averaging it, so the video read as blown-out/overexposed; toned down to compensate
+    '  }',
+    '  vVideoBlend = videoBlend;',
+    '  vec2 windDir = normalize(vec2(1.0, 0.4));',
+    '  vec2 perpDir = vec2(-windDir.y, windDir.x);',
+    '  float gust = 0.6 + 0.4 * sin(uTime * 0.15);',
+    '  float leanAmp = 0.05;',
+    '  float lean = sin(dot(position.xz, windDir) * 0.35 - uTime * 0.6) * leanAmp * gust;',
+    '  float freqA1 = 2.0 + hx * 2.2;',
+    '  float freqA2 = 3.4 + hy * 2.6;',
+    '  float flutterAlong = sin(uTime * freqA1 + phA1) * 0.045 * (0.5 + 0.5 * gust);',
+    '  float flutterAcross = (sin(uTime * freqA2 + phA2) + 0.5 * sin(uTime * freqA2 * 2.1 + phA2 * 1.6)) * 0.075 * (0.5 + 0.5 * gust);',
+    '  float flutterUp = sin(uTime * (freqA1 * 1.3) + phA2) * 0.03 * (0.5 + 0.5 * gust);',
+    '  vec3 windDir3 = vec3(windDir.x, 0.0, windDir.y);',
+    '  vec3 perpDir3 = vec3(perpDir.x, 0.0, perpDir.y);',
+    '  vec3 drift = (windDir3 * (lean + flutterAlong) + perpDir3 * flutterAcross + vec3(0.0, flutterUp, 0.0)) * (1.0 - videoBlend);',
+    '  vec3 driftedPosition = basePos + drift;',
+    '  vec4 mvPosition = modelViewMatrix * vec4(driftedPosition, 1.0);',
+    '  vec3 flutterDir3 = drift;',
+    '  float flutterLen = length(flutterDir3);',
+    '  flutterDir3 = flutterLen > 0.0001 ? flutterDir3 / flutterLen : windDir3;',
+    '  vec4 mvPositionB = modelViewMatrix * vec4(driftedPosition + flutterDir3 * 0.5, 1.0);',
+    '  vec4 clipA = projectionMatrix * mvPosition;',
+    '  vec4 clipB = projectionMatrix * mvPositionB;',
+    '  vec2 ndcA = clipA.xy / clipA.w;',
+    '  vec2 ndcB = clipB.xy / clipB.w;',
+    '  vStreakAngle = atan(ndcB.y - ndcA.y, ndcB.x - ndcA.x);',
+    '  vIntensity = intensity;',
+    '  float sizeVal = mix(aSize, ' + VIDEO_POINT_SIZE.toFixed(2) + ', videoBlend);',
+    '  gl_PointSize = sizeVal * (' + POINT_SIZE_SCALE.toFixed(1) + ' / -mvPosition.z);',
+    '  gl_Position = projectionMatrix * mvPosition;',
+    '}'
+  ].join('\n');
+
+  var fragmentShader = [
+    'uniform sampler2D uMap;',
+    'uniform sampler2D uRoundMap;',
+    'uniform sampler2D uVideoMap;',
+    'varying vec3 vColor;',
+    'varying float vIntensity;',
+    'varying float vStreakAngle;',
+    'varying vec2 vVideoUV;',
+    'varying float vVideoBlend;',
+    'void main(){',
+    '  vec2 centered = gl_PointCoord - vec2(0.5);',
+    '  float ca = cos(-vStreakAngle);',
+    '  float sa = sin(-vStreakAngle);',
+    '  vec2 rotated = vec2(ca*centered.x - sa*centered.y, sa*centered.x + ca*centered.y) + vec2(0.5);',
+    '  vec4 tex = texture2D(uMap, rotated);',
+    '  vec4 texRound = texture2D(uRoundMap, gl_PointCoord);',
+    '  float spriteAlpha = mix(tex.r, texRound.r, vVideoBlend);',
+    '  vec3 videoColor = texture2D(uVideoMap, vVideoUV).rgb;',
+    '  videoColor = clamp((videoColor - 0.5) * 1.35 + 0.5, 0.0, 1.0);', // this contrast curve runs on each particle's own color, before the additive overlap-summing below (which is what controls overall exposure via the 0.22 intensity) — so pushing it back up sharpens perceived detail without re-blowing-out the highlights
+    '  videoColor *= vec3(0.9, 0.97, 1.1);',
+    '  vec3 finalColor = mix(vColor, videoColor, vVideoBlend);',
+    '  float i = vIntensity;',
+    '  gl_FragColor = vec4(finalColor * i, spriteAlpha * i);',
+    '  gl_FragColor.rgb *= spriteAlpha;',
+    '}'
+  ].join('\n');
+
+  // Title wordmark shader — same fly/twinkle/converge grammar as the main
+  // shader above (copied, not shared, since it hashes off a per-particle
+  // aSeed rather than position — see buildTitleGeometry). Once formed, the
+  // target is a billboard: uCenter plus the particle's local (x,y) offset
+  // expressed in the camera's own right/up axes, recomputed every frame in
+  // JS, so the wordmark keeps facing the camera as it orbits during flying.
+  var titleVertexShader = [
+    'attribute vec3 aSeed;',
+    'uniform float uTime;',
+    'uniform float uFormTrigger;',
+    'uniform float uDisperseTrigger;',
+    'uniform vec3 uCenter;',
+    'uniform vec3 uCamRight;',
+    'uniform vec3 uCamUp;',
+    'varying float vIntensity;',
+    'float hash13(vec3 p){',
+    '  p = fract(p * 0.3183099 + 0.1);',
+    '  p *= 17.0;',
+    '  return fract(p.x * p.y * p.z * (p.x + p.y + p.z));',
+    '}',
+    'void main(){',
+    '  float h = hash13(aSeed);',
+    '  float hx = hash13(aSeed + 11.0);',
+    '  float hy = hash13(aSeed + 23.0);',
+    '  float hz = hash13(aSeed + 41.0);',
+    '  float phase = h * 6.28318;',
+    '  float phA1 = hx * 6.28318;',
+    '  float phA2 = hy * 6.28318;',
+    '  float speed = 0.5 + h * 1.1;',
+    '  float twinkle = 1.05 + 0.35 * sin(uTime * speed + phase);',
+    '  float scatterAngle = h * 6.28318;',
+    '  float scatterRad = 10.0 + hx * 26.0;',
+    '  vec3 scatterPos = vec3(cos(scatterAngle)*scatterRad, 6.0 + hy * 14.0, sin(scatterAngle)*scatterRad);',
+    '  float flowSpeed1 = 0.35 + hx * 0.55;',
+    '  float flowSpeed2 = 0.28 + hy * 0.5;',
+    '  float flowSpeed3 = 0.4 + hz * 0.55;',
+    '  float flightAmp = 7.0;',
+    '  vec3 flight = vec3(',
+    '    sin(uTime * flowSpeed1 + phA1) * flightAmp + sin(uTime * flowSpeed3 * 0.6 + phA2) * flightAmp * 0.4,',
+    '    cos(uTime * flowSpeed2 * 1.1 + phA2) * flightAmp * 0.6,',
+    '    cos(uTime * flowSpeed1 * 0.8 + phA1 * 1.3) * flightAmp + sin(uTime * flowSpeed3 + phA1) * flightAmp * 0.4',
+    '  );',
+    '  float xNorm = clamp(position.x / ' + (TITLE_WORLD_WIDTH*0.5).toFixed(2) + ', -1.0, 1.0);',
+    '  float formDelay = (xNorm * 0.5 + 0.5) * ' + TITLE_SWEEP_SPAN.toFixed(2) + ' + hz * 0.35;',
+    '  float formDur = ' + TITLE_FORM_DUR_MIN.toFixed(2) + ' + hx * ' + (TITLE_FORM_DUR_MAX-TITLE_FORM_DUR_MIN).toFixed(2) + ';',
+    '  vec3 targetPos = uCenter + uCamRight * position.x + uCamUp * position.y;',
+    '  float localT = (uFormTrigger < 0.0) ? -1.0 : (uTime - uFormTrigger - formDelay);',
+    '  vec3 basePos;',
+    '  float intensity;',
+    '  if(localT <= 0.0){',
+    '    float flyIntensity = 0.35 + 0.2 * max(0.0, sin(uTime * speed + phase));',
+    '    if(uDisperseTrigger >= 0.0){',
+    '      float dt = clamp((uTime - uDisperseTrigger - formDelay) / formDur, 0.0, 1.0);',
+    '      float de = 1.0 - pow(1.0 - dt, 3.0);',
+    '      basePos = mix(targetPos, scatterPos + flight, de);',
+    '      intensity = mix(twinkle, flyIntensity, de);',
+    '    } else {',
+    '      basePos = scatterPos + flight;',
+    '      intensity = flyIntensity;',
+    '    }',
+    '  } else {',
+    '    float tt = clamp(localT / formDur, 0.0, 1.0);',
+    '    float e = 1.0 - pow(1.0 - tt, 3.0);',
+    '    basePos = mix(scatterPos, targetPos, e) + flight * (1.0 - e);',
+    '    intensity = (0.4 + 0.6 * e) * twinkle;',
+    '  }',
+    '  vIntensity = intensity;',
+    '  vec4 mvPosition = modelViewMatrix * vec4(basePos, 1.0);',
+    '  gl_PointSize = ' + TITLE_POINT_SIZE.toFixed(3) + ' * (' + POINT_SIZE_SCALE.toFixed(1) + ' / -mvPosition.z);',
+    '  gl_Position = projectionMatrix * mvPosition;',
+    '}'
+  ].join('\n');
+
+  var titleFragmentShader = [
+    'uniform sampler2D uRoundMap;',
+    'uniform vec3 uColor;',
+    'varying float vIntensity;',
+    'void main(){',
+    '  vec4 tex = texture2D(uRoundMap, gl_PointCoord);',
+    '  float i = vIntensity;',
+    '  gl_FragColor = vec4(uColor * i, tex.r * i);',
+    '  gl_FragColor.rgb *= tex.r;',
+    '}'
+  ].join('\n');
+
+  function initScene(){
+    if(initialized) return;
+    initialized = true;
+
+    var canvas = document.getElementById('scene-canvas');
+    // antialias off: MSAA is pure wasted fill-rate cost here — the scene is
+    // ~950k additive-blended soft point sprites with no hard geometric edges
+    // for it to smooth, and it was the single biggest cost against the
+    // video-mosaic phase (particle overdraw + a decoding video texture at
+    // the same time) causing visible stutter.
+    renderer = new THREE.WebGLRenderer({ canvas:canvas, antialias:false, alpha:false });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio||1, 1.5));
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setClearColor(0x000000, 1);
+
+    scene = new THREE.Scene();
+    camera = new THREE.PerspectiveCamera(48, window.innerWidth/window.innerHeight, 0.1, 200);
+
+    var interleaved = new THREE.InterleavedBuffer(particleData, 12);
+    var geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.InterleavedBufferAttribute(interleaved, 3, 3));
+    geo.setAttribute('aColor',   new THREE.InterleavedBufferAttribute(interleaved, 3, 6));
+    geo.setAttribute('aSize',    new THREE.InterleavedBufferAttribute(interleaved, 1, 9));
+    geo.setAttribute('aVideoGridUV', new THREE.BufferAttribute(videoGridUV, 2));
+
+    var videoEl = document.getElementById('revealVideo');
+    var videoTexture = new THREE.VideoTexture(videoEl);
+    videoTexture.minFilter = THREE.LinearFilter;
+    videoTexture.magFilter = THREE.LinearFilter;
+    videoTexture.generateMipmaps = false;
+    if('colorSpace' in videoTexture) videoTexture.colorSpace = THREE.SRGBColorSpace;
+
+    var mat = new THREE.ShaderMaterial({
+      uniforms:{
+        uMap:{ value: makeSprite() },
+        uRoundMap:{ value: makeRoundSprite() },
+        uVideoMap:{ value: videoTexture },
+        uTime:{ value: 0 },
+        uFormTrigger:{ value: -1 },
+        uDisperseTrigger:{ value: -1 },
+        uMaxRadial:{ value: maxRadial },
+        uVideoTrigger:{ value: -1 }
+      },
+      vertexShader: vertexShader,
+      fragmentShader: fragmentShader,
+      transparent:true,
+      depthWrite:false,
+      depthTest:true,
+      blending:THREE.AdditiveBlending
+    });
+
+    points = new THREE.Points(geo, mat);
+    scene.add(points);
+
+    var titleData = buildTitleGeometry();
+    var titleGeo = new THREE.BufferGeometry();
+    titleGeo.setAttribute('position', new THREE.BufferAttribute(titleData.positions, 3));
+    titleGeo.setAttribute('aSeed', new THREE.BufferAttribute(titleData.seeds, 3));
+    var titleMat = new THREE.ShaderMaterial({
+      uniforms:{
+        uRoundMap:{ value: makeRoundSprite() },
+        uTime:{ value: 0 },
+        uFormTrigger:{ value: -1 },
+        uDisperseTrigger:{ value: -1 },
+        uCenter:{ value: TITLE_CENTER.clone() },
+        uCamRight:{ value: new THREE.Vector3(1,0,0) },
+        uCamUp:{ value: new THREE.Vector3(0,1,0) },
+        uColor:{ value: new THREE.Color(0x4ee89a) } // matches --cyan, the site's green HUD accent
+      },
+      vertexShader: titleVertexShader,
+      fragmentShader: titleFragmentShader,
+      transparent:true,
+      depthWrite:false,
+      depthTest:true,
+      blending:THREE.AdditiveBlending
+    });
+    titlePoints = new THREE.Points(titleGeo, titleMat);
+    scene.add(titlePoints);
+    _tmpRight = new THREE.Vector3();
+    _tmpUp = new THREE.Vector3();
+
+    var ringGeo = new THREE.RingGeometry(0.94, 1, 96);
+    var ringMat = new THREE.MeshBasicMaterial({
+      map: makeRingTexture(), transparent:true, blending:THREE.AdditiveBlending,
+      depthWrite:false, side:THREE.DoubleSide
+    });
+    ringMesh = new THREE.Mesh(ringGeo, ringMat);
+    ringMesh.rotation.x = -Math.PI/2;
+    scene.add(ringMesh);
+
+    clock = new THREE.Clock();
+    window.addEventListener('resize', onResize);
+    window.addEventListener('pointerdown', onPointerDown);
+    window.addEventListener('keydown', onKeyDown);
+
+    requestAnimationFrame(animate);
+  }
+
+  function onResize(){
+    if(!renderer) return;
+    camera.aspect = window.innerWidth/window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+  }
+
+  function onKeyDown(e){
+    if(e.key.toLowerCase() === 'r'){ window.location.reload(); }
+  }
+
+  // ==========================================================================
+  // Timeline / state machine — particles fly in a wide scatter, then slowly
+  // assemble into the actual masterplan, and stay formed (steady orbit) —
+  // all on this same page.
+  // ==========================================================================
+  var phase = 'idle'; // idle -> flying -> formed
+  var phaseStart = 0;
+  var formTriggerTime = null;
+  var realRevealStart = null;
+
+  // Once the video reveal starts, the particles echo the intro's fly-then-form
+  // motion a second time by re-using formTriggerTime itself: nulling it makes
+  // them scatter (same wide chaotic flight, same camera dolly-out), setting it
+  // again makes them systematically reconverge — no separate shader path needed.
+  // Once the video reveal starts, the particles echo the intro's fly-then-form
+  // motion once more by re-using formTriggerTime itself: nulling it makes them
+  // scatter (same wide chaotic flight, same camera dolly-out). They then
+  // converge again, but onto the video mosaic (uVideoTrigger) instead of back
+  // onto the site — so "forming the video" reuses the exact same motion
+  // grammar as "forming the model", just with a different destination.
+  var videoTriggerTime = null;
+  var disperseTriggerTime = null; // when set, eases OUT from the formed position back to flying, instead of snapping
+  var revealStage = 'none'; // none -> dispersing -> convergingToVideo -> done
+  var revealStageStart = 0;
+
+  var titleFormTriggerTime = null;    // set a moment into flying, so the wordmark assembles out of the same chaotic swarm
+  var titleDisperseTriggerTime = null; // set the instant the site starts forming, so the title breaks apart as the model takes over
+
+  function beginForming(){
+    phase = 'flying';
+    phaseStart = clock.getElapsedTime();
+    formTriggerTime = null;
+    document.getElementById('sceneHud').classList.add('visible');
+  }
+
+  function triggerFormation(t){
+    if(formTriggerTime !== null) return;
+    formTriggerTime = t;
+    phase = 'formed';
+    if(titleDisperseTriggerTime === null) titleDisperseTriggerTime = t;
+  }
+
+  function tryStartReveal(t){
+    if(realRevealStart !== null) return;
+    realRevealStart = t;
+    startRevealVideo(); // re-assert play in case the early background start (see below) got rejected
+
+    formTriggerTime = null; // re-triggers the wide chaotic scatter
+    disperseTriggerTime = t; // eases smoothly out from the formed position instead of snapping
+    revealStage = 'dispersing';
+    revealStageStart = t;
+  }
+
+  function onPointerDown(){
+    var now = clock.getElapsedTime();
+    if(phase === 'flying' && (now - phaseStart) >= MIN_FLY_BEFORE_SKIP){
+      triggerFormation(now);
+      return;
+    }
+    if(phase === 'formed' && realRevealStart === null && formTriggerTime !== null && (now - formTriggerTime) > TOTAL_FORM_TIME){
+      tryStartReveal(now);
+    }
+  }
+
+  function easeOutCubic(t){ return 1 - Math.pow(1-t, 3); }
+
+  function animate(){
+    requestAnimationFrame(animate);
+    var t = clock.getElapsedTime();
+    var elapsed = phase === 'idle' ? 0 : (t - phaseStart);
+
+    if(points){
+      var u = points.material.uniforms;
+      u.uTime.value = t;
+      u.uFormTrigger.value = formTriggerTime === null ? -1 : formTriggerTime;
+      u.uDisperseTrigger.value = disperseTriggerTime === null ? -1 : disperseTriggerTime;
+      u.uVideoTrigger.value = videoTriggerTime === null ? -1 : videoTriggerTime;
+    }
+
+    if(titlePoints){
+      var tu = titlePoints.material.uniforms;
+      tu.uTime.value = t;
+      tu.uFormTrigger.value = titleFormTriggerTime === null ? -1 : titleFormTriggerTime;
+      tu.uDisperseTrigger.value = titleDisperseTriggerTime === null ? -1 : titleDisperseTriggerTime;
+    }
+
+    if(phase === 'flying' && titleFormTriggerTime === null && elapsed >= TITLE_FORM_DELAY){
+      titleFormTriggerTime = t;
+    }
+
+    if(phase === 'flying' && elapsed > FLY_DURATION){
+      triggerFormation(t);
+    }
+
+    if(formTriggerTime !== null && realRevealStart === null && (t - formTriggerTime) > (TOTAL_FORM_TIME + REVEAL_HOLD)){
+      tryStartReveal(t);
+    }
+
+    // ---- video reveal: scatter apart, then converge onto the video mosaic ----
+    if(revealStage === 'dispersing' && (t - revealStageStart) > DISPERSE_DURATION){
+      videoTriggerTime = t; // triggers convergence onto the video-mosaic plane
+      revealStage = 'convergingToVideo';
+      revealStageStart = t;
+    }
+    if(revealStage === 'convergingToVideo' && (t - revealStageStart) > (VIDEO_FORM_DUR + VIDEO_STAGGER)){
+      revealStage = 'done';
+      document.getElementById('labelSmall').textContent = 'Particle mosaic · live video feed';
+    }
+
+    // ---- ambient scan ring: loops while flying, fades once the site starts forming;
+    //      stays hidden once the video reveal begins ----
+    if(ringMesh && revealStage !== 'none'){
+      ringMesh.visible = false;
+    } else if(ringMesh){
+      if(formTriggerTime === null){
+        var sweepT = (elapsed % RING_SWEEP_TIME) / RING_SWEEP_TIME;
+        var rWorld = sweepT * maxRadial * 1.2;
+        ringMesh.scale.set(rWorld, rWorld, rWorld);
+        ringMesh.material.opacity = 0.85 * (1 - sweepT);
+        ringMesh.visible = true;
+      } else {
+        var fadeT = Math.min(1, (t - formTriggerTime) / TOTAL_FORM_TIME);
+        ringMesh.material.opacity = 0.85 * (1 - fadeT);
+        ringMesh.visible = fadeT < 1;
+      }
+    }
+
+    // ---- camera: wide orbit while flying, cinematically dollies into the close
+    //      steady-state orbit as the site snaps into place, then eases into a
+    //      fixed front-on framing of the video-mosaic plane during the reveal.
+    //      Once dispersing begins (disperseTriggerTime set), the camera stays
+    //      at the close orbit — it should NOT zoom back out just because the
+    //      particles are scattering again. ----
+    var dollyT;
+    if(disperseTriggerTime !== null){
+      dollyT = 1;
+    } else {
+      dollyT = formTriggerTime === null ? 0 : Math.min(1, (t - formTriggerTime) / DOLLY_DURATION);
+    }
+    var ease = easeOutCubic(dollyT);
+
+    var radiusPhase = (Math.sin(t * (Math.PI*2/ORBIT_RADIUS_PERIOD)) + 1) / 2;
+    var heightPhase = (Math.sin(t * (Math.PI*2/ORBIT_HEIGHT_PERIOD) + 1.7) + 1) / 2;
+    var finalRadius = ORBIT_RADIUS_MIN + (ORBIT_RADIUS_MAX-ORBIT_RADIUS_MIN) * radiusPhase;
+    var finalHeight = ORBIT_HEIGHT_MIN + (ORBIT_HEIGHT_MAX-ORBIT_HEIGHT_MIN) * heightPhase;
+
+    var camAngleSpeed = 0.07 - (0.07-0.045) * ease;
+    var camAngle = t * camAngleSpeed;
+    var camRadius = 60 + (finalRadius-60) * ease;
+    var camHeight = 32 + (finalHeight-32) * ease;
+    var lookHeight = 5 + (0.5-5) * ease;
+
+    var orbitX = Math.cos(camAngle) * camRadius;
+    var orbitY = camHeight;
+    var orbitZ = Math.sin(camAngle) * camRadius;
+
+    var videoEase = videoTriggerTime === null ? 0 : easeOutCubic(Math.min(1, (t - videoTriggerTime) / VIDEO_FORM_DUR));
+    var fixedX = 0, fixedY = VIDEO_PLANE_CENTER_Y, fixedZ = VIDEO_PLANE_Z + VIDEO_VIEW_DIST;
+
+    var camX = orbitX + (fixedX - orbitX) * videoEase;
+    var camY = orbitY + (fixedY - orbitY) * videoEase;
+    var camZ = orbitZ + (fixedZ - orbitZ) * videoEase;
+    var lookY = lookHeight + (VIDEO_PLANE_CENTER_Y - lookHeight) * videoEase;
+    var lookZ = 0 + (VIDEO_PLANE_Z - 0) * videoEase;
+
+    if(camera){
+      camera.position.set(camX, camY, camZ);
+      camera.lookAt(0, lookY, lookZ);
+    }
+
+    if(titlePoints && camera){
+      var camRight = _tmpRight.set(1,0,0).applyQuaternion(camera.quaternion);
+      var camUp = _tmpUp.set(0,1,0).applyQuaternion(camera.quaternion);
+      titlePoints.material.uniforms.uCamRight.value.copy(camRight);
+      titlePoints.material.uniforms.uCamUp.value.copy(camUp);
+      if(titleDisperseTriggerTime !== null && (t - titleDisperseTriggerTime) > TITLE_DISPERSE_FADE){
+        titlePoints.visible = false;
+      }
+    }
+
+    if(renderer && scene && camera) renderer.render(scene, camera);
+  }
+
+  // ==========================================================================
+  // Voiceover narration — plays once on load alongside the visuals. Browsers
+  // block unmuted audio autoplay without a prior user gesture, so if the
+  // initial play() is rejected, fall back to starting it on the first
+  // click/tap/keypress anywhere on the page instead.
+  //
+  // Routed through a couple of EQ filters (Web Audio API) to add crispness —
+  // a presence boost around 3.5kHz plus an air/brightness boost above 7kHz —
+  // since the raw take was recorded sounding a bit too smooth/soft.
+  // ==========================================================================
+  function setupNarrationFilters(audio){
+    var Ctx = window.AudioContext || window.webkitAudioContext;
+    if(!Ctx) return null;
+    var ctx = new Ctx();
+    var source = ctx.createMediaElementSource(audio);
+    var bass = ctx.createBiquadFilter();
+    bass.type = 'lowshelf';
+    bass.frequency.value = 180;
+    bass.gain.value = 1;
+    var presence = ctx.createBiquadFilter();
+    presence.type = 'peaking';
+    presence.frequency.value = 4000;
+    presence.Q.value = 1.0;
+    presence.gain.value = 6;
+    var air = ctx.createBiquadFilter();
+    air.type = 'highshelf';
+    air.frequency.value = 6500;
+    air.gain.value = 7;
+
+    // Heavier, slower compression than before — smooths out the natural
+    // dynamic range into a calm, even, "composed AI assistant" delivery
+    // (JARVIS-like poise) rather than an expressive human read.
+    var compressor = ctx.createDynamicsCompressor();
+    compressor.threshold.value = -26;
+    compressor.knee.value = 10;
+    compressor.ratio.value = 6;
+    compressor.attack.value = 0.008;
+    compressor.release.value = 0.35;
+    var boldness = ctx.createGain();
+    boldness.gain.value = 1.15;
+
+    // A short, subtle slap-back delay — cheap studio "polish"/ambience
+    // (no impulse-response file needed) that keeps it dry and precise
+    // rather than sounding like a plain unproduced take.
+    var delay = ctx.createDelay();
+    delay.delayTime.value = 0.032;
+    var feedback = ctx.createGain();
+    feedback.gain.value = 0.12;
+    var wetMix = ctx.createGain();
+    wetMix.gain.value = 0.16;
+    delay.connect(feedback);
+    feedback.connect(delay);
+    delay.connect(wetMix);
+
+    source.connect(bass);
+    bass.connect(presence);
+    presence.connect(air);
+    air.connect(compressor);
+    air.connect(delay);
+    compressor.connect(boldness);
+    wetMix.connect(boldness);
+    boldness.connect(ctx.destination);
+    return ctx;
+  }
+
+  function startNarration(){
+    var audio = document.getElementById('narration');
+    // This is now a real male voiceover (ElevenLabs "Jon"), so the pitch-shift
+    // hack used to fake a deeper voice from the old female take is gone —
+    // pitch stays natural, with just a gentle pace ease for a measured feel.
+    audio.preservesPitch = true;
+    audio.mozPreservesPitch = true;
+    audio.webkitPreservesPitch = true;
+    audio.playbackRate = 0.95;
+
+    var audioCtx = setupNarrationFilters(audio);
+
+    // The reveal video loops seamlessly (see startRevealVideo) for as long as
+    // the voiceover is still talking; once it ends, let the video's current
+    // pass finish (loop=false, not a hard stop) and hold there instead of
+    // continuing to loop with nothing left to narrate over it. Then hand off
+    // to the floor plan on the parent page (this file is embedded there in
+    // an iframe).
+    audio.addEventListener('ended', function(){
+      document.getElementById('revealVideo').loop = false;
+      handOff();
+    });
+
+    function tryPlay(){
+      if(audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+      return audio.play();
+    }
+
+    // Browsers block unmuted audio autoplay without a prior user gesture —
+    // there's no reliable code-only way around that (see project notes on
+    // running Chrome/Edge with --autoplay-policy=no-user-gesture-required
+    // for kiosk/demo use, which only applies locally, not for real visitors
+    // on the live site). This attempts to play immediately regardless, and
+    // falls back to starting on the first click/tap/keypress if blocked —
+    // showing #soundPrompt so that fallback isn't silently invisible.
+    var soundPrompt = document.getElementById('soundPrompt');
+    var playAttempt = tryPlay();
+    if(playAttempt && playAttempt.catch){
+      playAttempt.catch(function(){
+        soundPrompt.classList.add('visible');
+        var resumeOnGesture = function(){
+          soundPrompt.classList.remove('visible');
+          tryPlay().catch(function(){});
+          window.removeEventListener('pointerdown', resumeOnGesture);
+          window.removeEventListener('keydown', resumeOnGesture);
+        };
+        window.addEventListener('pointerdown', resumeOnGesture, { once:true });
+        window.addEventListener('keydown', resumeOnGesture, { once:true });
+      });
+    }
+  }
+
+  // Starts the reveal video decoding in the background from page load (it
+  // stays invisible via opacity:0 until the mosaic reveal — see CSS) rather
+  // than waiting until tryStartReveal(), ~8+ seconds later. That gives it the
+  // same autoplay-policy fallback the narration already has (muted autoplay
+  // is normally allowed, but some browsers/embedded webviews still reject it
+  // without a prior gesture), and by the time it's actually shown it's
+  // already warmed up and reliably playing instead of stuck on frame 0. It
+  // loops seamlessly (forward/reverse ping-pong — see vn-site-loop.mp4) until
+  // the narration ends, at which point startNarration()'s 'ended' handler
+  // turns looping off so it finishes its current pass and holds.
+  function startRevealVideo(){
+    var video = document.getElementById('revealVideo');
+    var playAttempt = video.play();
+    if(playAttempt && playAttempt.catch){
+      playAttempt.catch(function(){
+        var resumeOnGesture = function(){
+          video.play().catch(function(){});
+          window.removeEventListener('pointerdown', resumeOnGesture);
+          window.removeEventListener('keydown', resumeOnGesture);
+        };
+        window.addEventListener('pointerdown', resumeOnGesture, { once:true });
+        window.addEventListener('keydown', resumeOnGesture, { once:true });
+      });
+    }
+  }
+
+  // Fades to black, holds on a "let's start the experience" beat, then
+  // navigates the parent page (this file is embedded there in an iframe) to
+  // the floor plan -- called once the narration ends, or immediately from
+  // the Skip button.
+  var FADE_TO_BLACK_MS = 1300;   // matches #fadeOverlay's 1.2s CSS transition
+  var START_PROMPT_HOLD_MS = 2800; // how long "Let's Start the Experience" stays on screen
+  var handedOff = false;
+  function handOff(){
+    if(handedOff) return;
+    handedOff = true;
+    document.getElementById('skipButton').classList.add('hidden');
+    document.getElementById('fadeOverlay').classList.add('visible');
+    setTimeout(function(){
+      document.getElementById('startPrompt').classList.add('visible');
+      setTimeout(function(){
+        var target = 'https://pragathibhat.github.io/Robonexus/';
+        if(window.top && window.top !== window){
+          window.top.location.href = target;
+        } else {
+          window.location.href = target;
+        }
+      }, START_PROMPT_HOLD_MS);
+    }, FADE_TO_BLACK_MS);
+  }
+  document.getElementById('skipButton').addEventListener('click', function(){
+    document.getElementById('narration').pause();
+    document.getElementById('revealVideo').loop = false;
+    handOff();
+  });
+
+  // ==========================================================================
+  // Entry point — starts automatically on page load, no click needed.
+  // Narration and the reveal video start right away, independent of
+  // buildSite(): that fetches a ~45MB point-cloud file, and gating the
+  // voiceover behind that download would delay it by however long the
+  // fetch takes instead of it starting the instant the page loads.
+  // ==========================================================================
+  var NARRATION_START_DELAY = 2000; // ms — a beat of silence before the voiceover kicks in
+  setTimeout(startNarration, NARRATION_START_DELAY);
+  startRevealVideo();
+  buildSite().then(function(){
+    initScene();
+    beginForming();
+  });
+})();
+</script>
+
+</body>
+</html>
