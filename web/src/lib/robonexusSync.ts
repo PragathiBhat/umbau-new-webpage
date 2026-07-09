@@ -36,3 +36,13 @@ export function triggerScenarioMarker(scenarioId: string): void {
     console.warn('Could not reach the Robonexus sync database:', err);
   });
 }
+
+// Fired once when a visitor lands on the Explore page (not on every
+// scenario click) -- tells the display device(s) to hard-reload, so each
+// demo session starts from a clean page load. Deliberately not called on
+// leaving the Explore page; nothing should happen to the display then.
+export function triggerDisplayReload(): void {
+  set(ref(db, 'displayReload'), Date.now()).catch((err) => {
+    console.warn('Could not reach the Robonexus sync database:', err);
+  });
+}
