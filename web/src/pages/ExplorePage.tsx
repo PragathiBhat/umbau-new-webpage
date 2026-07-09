@@ -2,72 +2,52 @@ import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ParticleBackground } from '../components/ParticleBackground';
 import { HudCorners } from '../components/HudCorners';
-import { RadarRing } from '../components/RadarRing';
 import { SectionLabel } from '../components/SectionLabel';
-import { useTypewriter } from '../hooks/useTypewriter';
 
-// Drop the real intro video in as web/public/assets/explore-intro.mp4 — the
-// intro will automatically play it and sync its duration to the video's
-// actual length. Until that file exists, the video errors out immediately
-// and the fallback timer below keeps the intro working as before.
-const INTRO_VIDEO_SRC = `${import.meta.env.BASE_URL}assets/explore-intro.mp4`;
-const FALLBACK_DURATION_MS = 3200;
+// The full "digital twin scan" opening (particle site formation + ROBONEXUS
+// wordmark + narrated voiceover + video-mosaic reveal) from the
+// ROBONEXUS-OPENING repo, embedded as-is via iframe rather than ported into
+// React — it's a self-contained, already-tuned Three.js/WebGL scene with its
+// own audio EQ pipeline and animation timeline, and re-implementing that here
+// would risk breaking the tuning for no benefit.
+const OPENING_SRC = `${import.meta.env.BASE_URL}assets/robonexus-opening/index.html`;
+
+// Safety net only — the opening drives its own pacing (flight, formation,
+// hold, video-mosaic reveal) and we advance the instant its narration audio
+// fires 'ended'. This fallback only fires if that never happens (asset
+// failed to load, autoplay blocked with no fallback gesture, etc.).
+const FALLBACK_DURATION_MS = 90_000;
 
 function IntroOverlay({ onSkip, onDone }: { onSkip: () => void; onDone: () => void }) {
-  const { displayed, done } = useTypewriter('INITIALIZING PLAZA INTERFACE', 28, 300);
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const [videoAvailable, setVideoAvailable] = useState(false);
+  const iframeRef = useRef<HTMLIFrameElement>(null);
 
   useEffect(() => {
-    const video = videoRef.current;
-    if (!video) return;
-
-    // If a real video loads, let it drive the intro's duration exactly.
-    const handleCanPlay = () => setVideoAvailable(true);
-    const handleEnded = () => onDone();
-    video.addEventListener('canplay', handleCanPlay);
-    video.addEventListener('ended', handleEnded);
-
-    return () => {
-      video.removeEventListener('canplay', handleCanPlay);
-      video.removeEventListener('ended', handleEnded);
-    };
-  }, [onDone]);
-
-  useEffect(() => {
-    // No video (or it failed to load) — fall back to a fixed duration so the
-    // intro never gets stuck waiting on a file that doesn't exist yet.
-    if (videoAvailable) return;
     const timer = setTimeout(onDone, FALLBACK_DURATION_MS);
     return () => clearTimeout(timer);
-  }, [videoAvailable, onDone]);
+  }, [onDone]);
+
+  function handleIframeLoad() {
+    const audio = iframeRef.current?.contentDocument?.getElementById('narration');
+    if (audio instanceof HTMLAudioElement) {
+      audio.addEventListener('ended', onDone, { once: true });
+    }
+  }
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-[#0a0a0a] bg-blueprint-grid overflow-hidden">
-      <video
-        ref={videoRef}
-        autoPlay
-        muted
-        playsInline
-        preload="auto"
-        onError={() => setVideoAvailable(false)}
-        className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-500 ${
-          videoAvailable ? 'opacity-60' : 'opacity-0'
-        }`}
-      >
-        <source src={INTRO_VIDEO_SRC} type="video/mp4" />
-      </video>
-
-      <RadarRing size={320} color="green" className="relative opacity-50" />
-      <p className="relative font-mono text-sm sm:text-base tracking-[3px] text-sci-green uppercase text-glow-green">
-        {displayed}
-        {!done && <span className="inline-block w-[2px] h-[1em] bg-sci-green align-middle ml-[2px] animate-blink" />}
-      </p>
+    <div className="fixed inset-0 z-50 bg-black overflow-hidden">
+      <iframe
+        ref={iframeRef}
+        src={OPENING_SRC}
+        onLoad={handleIframeLoad}
+        title="Robonexus opening sequence"
+        className="absolute inset-0 w-full h-full border-0"
+        allow="autoplay"
+      />
 
       <button
         type="button"
         onClick={onSkip}
-        className="absolute bottom-8 right-8 flex items-center gap-2 border border-sci-green/40 px-4 py-2 font-mono text-xs tracking-[2px] uppercase text-sci-green hover:bg-sci-green/10 hover:border-sci-green transition-colors cursor-pointer"
+        className="absolute bottom-8 right-8 z-10 flex items-center gap-2 border border-sci-green/40 bg-black/60 px-4 py-2 font-mono text-xs tracking-[2px] uppercase text-sci-green hover:bg-sci-green/10 hover:border-sci-green transition-colors cursor-pointer"
       >
         Skip intro
         <svg viewBox="0 0 24 24" className="w-3.5 h-3.5 fill-none stroke-current stroke-[2.5]">
@@ -104,6 +84,9 @@ const CATEGORIES = [
 
 export function ExplorePage() {
   const [showIntro, setShowIntro] = useState(true);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+
+  const selected = CATEGORIES.flatMap((c) => c.scenarios).find((s) => s.id === selectedId);
 
   return (
     <div className="relative min-h-screen w-full bg-[#0a0a0a] text-white font-sans antialiased overflow-x-hidden">
@@ -131,27 +114,65 @@ export function ExplorePage() {
           Select a scenario to step into the plaza and see how the robots reshape it.
         </p>
 
-        <div className="grid sm:grid-cols-3 gap-5 flex-1">
+        <div className="grid sm:grid-cols-3 gap-5">
           {[0, 1].flatMap((row) =>
             CATEGORIES.map((c) => {
               const s = c.scenarios[row];
+              const isSelected = s.id === selectedId;
               return (
                 <button
                   key={s.id}
                   type="button"
-                  className="group relative flex flex-col border border-sci-green/20 bg-white/5 hover:border-sci-green/60 hover:bg-sci-green/5 transition-colors p-8 text-left cursor-pointer"
+                  onClick={() => setSelectedId(s.id)}
+                  aria-pressed={isSelected}
+                  className={`group relative flex flex-col border p-8 text-left transition-colors cursor-pointer ${
+                    isSelected
+                      ? 'border-sci-green bg-sci-green/10 shadow-[0_0_24px_rgba(46,255,77,0.15)]'
+                      : 'border-sci-green/20 bg-white/5 hover:border-sci-green/60 hover:bg-sci-green/5'
+                  }`}
                 >
                   <HudCorners />
-                  <p className="font-mono text-[11px] tracking-[3px] text-sci-green/60 uppercase mb-3">
+                  <p
+                    className={`font-mono text-[11px] tracking-[3px] uppercase mb-3 ${
+                      isSelected ? 'text-sci-green' : 'text-sci-green/60'
+                    }`}
+                  >
                     {c.category}
                   </p>
-                  <h3 className="font-orbitron text-xl font-bold uppercase tracking-wide text-white group-hover:text-sci-green transition-colors">
+                  <h3
+                    className={`font-orbitron text-xl font-bold uppercase tracking-wide transition-colors ${
+                      isSelected ? 'text-sci-green text-glow-green' : 'text-white group-hover:text-sci-green'
+                    }`}
+                  >
                     {s.label}
                   </h3>
+                  {isSelected && (
+                    <span className="absolute top-4 right-4 w-2 h-2 bg-sci-green shadow-[0_0_6px_#2eff4d] animate-pulse" />
+                  )}
                 </button>
               );
             }),
           )}
+        </div>
+
+        <div
+          className={`mt-8 flex items-center justify-between gap-4 border border-sci-green/30 bg-black/40 px-6 py-4 transition-opacity duration-300 ${
+            selected ? 'opacity-100' : 'opacity-0 pointer-events-none'
+          }`}
+        >
+          <p className="font-mono text-xs sm:text-sm tracking-[2px] uppercase text-neutral-300">
+            Selected: <span className="text-sci-green">{selected?.label ?? ''}</span>
+          </p>
+          <button
+            type="button"
+            disabled={!selected}
+            className="flex items-center gap-2 border border-sci-green/40 px-5 py-2.5 font-mono text-xs tracking-[2px] uppercase text-sci-green hover:bg-sci-green/10 hover:border-sci-green transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+          >
+            Enter scenario
+            <svg viewBox="0 0 24 24" className="w-3.5 h-3.5 fill-none stroke-current stroke-[2.5]">
+              <path d="M5 12h14M13 6l6 6-6 6" />
+            </svg>
+          </button>
         </div>
       </div>
     </div>
