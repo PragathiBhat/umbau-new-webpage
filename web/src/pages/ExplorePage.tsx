@@ -1,8 +1,9 @@
+import { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { ParticleBackground } from '../components/ParticleBackground';
 import { HudCorners } from '../components/HudCorners';
 import { SectionLabel } from '../components/SectionLabel';
-import { triggerScenarioMarker } from '../lib/robonexusSync';
+import { triggerDisplayReload, triggerScenarioMarker } from '../lib/robonexusSync';
 
 const CATEGORIES = [
   {
@@ -29,6 +30,12 @@ const CATEGORIES = [
 ];
 
 export function ExplorePage() {
+  useEffect(() => {
+    // Fires once on landing here — not on leaving. Nothing happens to the
+    // display when navigating away from this page.
+    triggerDisplayReload();
+  }, []);
+
   return (
     <div className="relative min-h-screen w-full bg-[#0a0a0a] text-white font-sans antialiased overflow-x-hidden">
       <div className="fixed inset-0 z-[1] bg-blueprint-grid pointer-events-none" aria-hidden="true" />
