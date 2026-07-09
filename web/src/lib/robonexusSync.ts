@@ -1,5 +1,5 @@
 import { initializeApp } from 'firebase/app';
-import { getDatabase, ref, set } from 'firebase/database';
+import { getDatabase, onValue, ref, set } from 'firebase/database';
 
 // Same Firebase Realtime Database project the Robonexus floor plan
 // (github.com/PragathiBhat/Robonexus) reads/writes -- this lets a scenario
@@ -45,4 +45,22 @@ export function triggerDisplayReload(): void {
   set(ref(db, 'displayReload'), Date.now()).catch((err) => {
     console.warn('Could not reach the Robonexus sync database:', err);
   });
+}
+
+// Fires `onActivity` whenever a scenario marker is selected on the shared
+// channel, regardless of which device/page triggered it -- our own scenario
+// buttons, a click on floorplan.html, anywhere. Used to pulse the particle
+// background in sync with the video/floor-plan reveal elsewhere. Skips the
+// value already sitting in the database when this subscription starts, so
+// merely loading the page doesn't fire it immediately.
+export function subscribeToScenarioActivity(onActivity: () => void): () => void {
+  let first = true;
+  const unsubscribe = onValue(ref(db, 'activeMarker'), () => {
+    if (first) {
+      first = false;
+      return;
+    }
+    onActivity();
+  });
+  return unsubscribe;
 }

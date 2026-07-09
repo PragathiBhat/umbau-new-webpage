@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react';
+import { subscribeToScenarioActivity } from '../lib/robonexusSync';
 
 interface Particle {
   x: number;
@@ -12,6 +13,13 @@ interface Particle {
 
 export function ParticleBackground() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const burstRef = useRef(0);
+
+  useEffect(() => {
+    return subscribeToScenarioActivity(() => {
+      burstRef.current = 1;
+    });
+  }, []);
 
   useEffect(() => {
     const canvas = canvasRef.current!;
@@ -42,19 +50,30 @@ export function ParticleBackground() {
     }
 
     function animate() {
+      const burst = burstRef.current;
+      const speedBoost = 1 + burst * 3;
+      const sizeBoost = 1 + burst * 0.9;
+      const opacityBoost = 1 + burst * 2.2;
+
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       for (const p of particles) {
-        p.x += p.vx;
-        p.y += p.vy;
+        p.x += p.vx * speedBoost;
+        p.y += p.vy * speedBoost;
         if (p.x < 0) p.x = canvas.width;
         if (p.x > canvas.width) p.x = 0;
         if (p.y < 0) p.y = canvas.height;
         if (p.y > canvas.height) p.y = 0;
         ctx.beginPath();
-        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-        ctx.fillStyle = p.cyan ? `rgba(43,227,255,${p.opacity})` : `rgba(46,255,77,${p.opacity})`;
+        ctx.arc(p.x, p.y, p.size * sizeBoost, 0, Math.PI * 2);
+        const opacity = Math.min(1, p.opacity * opacityBoost);
+        ctx.fillStyle = p.cyan ? `rgba(43,227,255,${opacity})` : `rgba(46,255,77,${opacity})`;
         ctx.fill();
       }
+
+      // Decays back to 0 over roughly a second and a half.
+      burstRef.current *= 0.965;
+      if (burstRef.current < 0.01) burstRef.current = 0;
+
       raf = requestAnimationFrame(animate);
     }
 
