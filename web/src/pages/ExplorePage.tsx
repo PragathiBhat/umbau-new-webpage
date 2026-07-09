@@ -105,17 +105,6 @@ const CATEGORIES = [
 
 export function ExplorePage() {
   const [showIntro, setShowIntro] = useState(true);
-  const [activatedId, setActivatedId] = useState<string | null>(null);
-
-  // Remotely selects the matching marker on the Robonexus floor plan (a
-  // separate site -- see lib/robonexusSync.ts) and briefly marks this
-  // button as activated, since the actual effect happens on whatever
-  // device has the floor plan open, not on this screen.
-  function handleActivate(id: string) {
-    triggerScenarioMarker(id);
-    setActivatedId(id);
-    setTimeout(() => setActivatedId((cur) => (cur === id ? null : cur)), 2200);
-  }
 
   return (
     <div className="relative min-h-screen w-full bg-[#0a0a0a] text-white font-sans antialiased overflow-x-hidden">
@@ -147,17 +136,12 @@ export function ExplorePage() {
           {[0, 1].flatMap((row) =>
             CATEGORIES.map((c) => {
               const s = c.scenarios[row];
-              const isActivated = activatedId === s.id;
               return (
                 <button
                   key={s.id}
                   type="button"
-                  onClick={() => handleActivate(s.id)}
-                  className={`group relative flex flex-col border transition-colors p-8 text-left cursor-pointer ${
-                    isActivated
-                      ? 'border-sci-green bg-sci-green/10'
-                      : 'border-sci-green/20 bg-white/5 hover:border-sci-green/60 hover:bg-sci-green/5'
-                  }`}
+                  onClick={() => triggerScenarioMarker(s.id)}
+                  className="group relative flex flex-col border border-sci-green/20 bg-white/5 hover:border-sci-green/60 hover:bg-sci-green/5 transition-colors p-8 text-left cursor-pointer"
                 >
                   <HudCorners />
                   <p className="font-mono text-[11px] tracking-[3px] text-sci-green/60 uppercase mb-3">
@@ -166,11 +150,6 @@ export function ExplorePage() {
                   <h3 className="font-orbitron text-xl font-bold uppercase tracking-wide text-white group-hover:text-sci-green transition-colors">
                     {s.label}
                   </h3>
-                  {isActivated && (
-                    <p className="mt-3 font-mono text-[10px] tracking-[2px] text-sci-green uppercase">
-                      Activated on floor plan
-                    </p>
-                  )}
                 </button>
               );
             }),
