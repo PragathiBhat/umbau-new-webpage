@@ -1,6 +1,7 @@
 import { HashRouter, Routes, Route } from 'react-router-dom';
 import { HomePage } from './pages/HomePage';
 import { ExplorePage } from './pages/ExplorePage';
+import { FloorplanPage } from './pages/FloorplanPage';
 
 // Always land on the homepage on a fresh page load/refresh, regardless of
 // whatever route was open before -- runs once at module load, before the
@@ -17,6 +18,7 @@ function App() {
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/explore" element={<ExplorePage />} />
+        <Route path="/floorplan" element={<FloorplanPage />} />
       </Routes>
     </HashRouter>
   );

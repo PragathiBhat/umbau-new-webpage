@@ -1041,11 +1041,13 @@
     setTimeout(function(){
       document.getElementById('startPrompt').classList.add('visible');
       setTimeout(function(){
-        var target = 'https://pragathibhat.github.io/Robonexus/';
+        // A same-site hash route (the floor plan is embedded here too, see
+        // FloorplanPage.tsx), not a navigation to a different site -- this
+        // is a client-side route change picked up by the parent's router.
         if(window.top && window.top !== window){
-          window.top.location.href = target;
+          window.top.location.hash = '/floorplan';
         } else {
-          window.location.href = target;
+          window.location.hash = '/floorplan';
         }
       }, START_PROMPT_HOLD_MS);
     }, FADE_TO_BLACK_MS);
