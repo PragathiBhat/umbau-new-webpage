@@ -145,7 +145,7 @@
   // Float32, stride 12: sx,sy,sz,tx,ty,tz,r,g,b,size,revealAt,settleDur — only
   // tx,ty,tz / r,g,b / size are used; the sx/sy/sz/revealAt/settleDur fields
   // are legacy and unused now that formation is driven entirely by uFormTrigger.
-  var DATA_URL = 'site-points-forming.bin?v=2';
+  var DATA_URL = 'site-points-forming.bin?v=3';
 
   var FLY_DURATION = 5.5;         // seconds particles fly/scatter before slowly forming the site
   var MIN_FLY_BEFORE_SKIP = 1.5;  // seconds that must pass before a tap is allowed to skip the flying — guards against an accidental early tap (e.g. a stray second click right after Start) cutting the flying phase short
