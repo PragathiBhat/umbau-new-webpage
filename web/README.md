@@ -7,33 +7,34 @@ Bauhaus-Universität Weimar, InfAU
 
 ## Abstract
 
-<!-- TODO: still a draft -- please check this reads true to your actual
-     project reasoning, and tell me more precisely what role AI played
-     (beyond the digital-twin/robotic framing I've assumed here). -->
-
-Wolfsburg's economy and identity are built around a single industry — car
-manufacturing — and daily life follows the structured rhythm that comes
-with it. Residents describe a real leisure gap: little variety, few reasons
-to stay rather than travel to Braunschweig, Hannover or Berlin for culture
-and activity. Robonexus responds by turning the city's own strength back on
-this problem: the same robotic systems that build cars — gantry structures,
-robotic arms, autonomous ground units — are repurposed to physically
-reconfigure a public plaza on demand, turning one static marketplace into
-market, event, and play space in turn. The project is presented as a
-digital twin: visitors experience a narrated aerial site scan of the
-plaza, then step into an interactive floor plan where each location plays
-a short video of that scenario's robotic reconfiguration in action.
+Wolfsburg is Germany's most productive city per capita — and home to one of
+its emptiest public plazas. The city is built entirely around one factory:
+Volkswagen employs roughly half its residents, drives a GDP per capita
+nearly three times the national average, and runs 5,000 factory robots
+working with sub-millimeter precision that has never once left the factory
+floor. Meanwhile Marktplatz, the city's civic and symbolic spine on
+Porschestrasse, struggles with declining footfall on a fully pedestrianized
+site built to hold far more life than it does. Robonexus's response is to
+repurpose that same factory precision as an urban tool: an AGV, a gantry,
+and a robotic arm — real industrial units (KUKA KMP 1500P, KR210 Gantry,
+KR210 R2700-2) — deliver, lift and assemble modular structures across the
+plaza, turning one fixed space into three identities on demand: market,
+event, and playground. The site presents this as a digital twin: a
+narrated aerial site scan leads into an interactive floor plan where each
+location plays a video of that scenario's robotic reconfiguration in
+action.
 
 ## The urban issue
 
-<!-- TODO: same caveat as above -- please correct anything off-base. -->
-
-Wolfsburg is a city defined by one industry, with structured routines and a
-recognised shortage of recreation and shared public life — enough that many
-residents look to neighbouring cities for it instead of staying local.
-Robonexus asks whether the robotic infrastructure that defines the city's
-economy could also address this gap: a plaza that reconfigures itself
-between market, event, and play, rather than one fixed to a single use.
+Wolfsburg is a city built entirely around one factory — Volkswagen employs
+about half its residents, and the city's productivity (nearly 3x the
+national GDP per capita) is generated almost entirely behind factory walls,
+with little of that energy visible on the streets outside. Marktplatz, the
+city's central and symbolic plaza, shows the imbalance directly: empty
+pavements, low footfall, and declining retail on a site that is already
+car-free and centrally connects the station, city hall, and the factory
+itself. Robonexus asks whether the same robotic precision that built the
+city's economy could also animate its public space.
 
 ## How to use this site
 
